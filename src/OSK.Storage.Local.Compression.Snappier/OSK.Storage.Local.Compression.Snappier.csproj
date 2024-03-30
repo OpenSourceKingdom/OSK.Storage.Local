@@ -5,11 +5,11 @@
 		<RepositoryUrl>https://github.com/OpenSourceKingdom/OSK.Storage.Local</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<Description>
-			An extension for OSK.Storage.Local service that adds an integration for cryptography
+			An extension for OSK.Storage.Local service that adds an integration for compression
 		</Description>
-		<PackageTags>OpenSourceKingdom, OpenSource, Local, LocalHost, Security, Encryption, Decryption, Cryptography</PackageTags>
+		<PackageTags>OpenSourceKingdom, OpenSource, Local, LocalHost, Compression, Data, Snappy</PackageTags>
 		<Authors>BlankDev117</Authors>
-		<Title>OSK.Storage.Local.Cryptography</Title>
+		<Title>OSK.Storage.Local.Compression.Snappier</Title>
 	</PropertyGroup>
 
 	<PropertyGroup>
@@ -17,8 +17,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="OSK.Security.Cryptography" Version="1.2.0" />
-		<PackageReference Include="OSK.Security.Cryptography.Aes" Version="1.0.1" />
+		<PackageReference Include="Snappier" Version="1.1.6" />
 	</ItemGroup>
 
 	<ItemGroup>

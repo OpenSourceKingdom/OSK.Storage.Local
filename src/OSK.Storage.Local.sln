@@ -3,9 +3,17 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.9.34607.119
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OSK.Storage.Local", "OSK.Storage.Local\OSK.Storage.Local.csproj", "{50E3AD3F-5D0C-49D6-979B-62ADDB3CC181}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OSK.Storage.Local", "OSK.Storage.Local\OSK.Storage.Local.csproj", "{50E3AD3F-5D0C-49D6-979B-62ADDB3CC181}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OSK.Storage.Local.UnitTests", "OSK.Storage.Local.UnitTests\OSK.Storage.Local.UnitTests.csproj", "{EBF29957-344A-4C19-9B0A-619DDBA5AAFF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OSK.Storage.Local.UnitTests", "OSK.Storage.Local.UnitTests\OSK.Storage.Local.UnitTests.csproj", "{EBF29957-344A-4C19-9B0A-619DDBA5AAFF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OSK.Storage.Local.Cryptography", "OSK.Storage.Local.Cryptography\OSK.Storage.Local.Cryptography.csproj", "{793F7A65-DF7E-4C16-A55E-A9819FD9B19A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OSK.Storage.Local.Compression.Snappier", "OSK.Storage.Local.Compression.Snappier\OSK.Storage.Local.Compression.Snappier.csproj", "{0E57EC49-5BB4-4BF5-B804-6E24FD62E938}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OSK.Storage.Local.DefaultConfiguration", "OSK.Storage.Local.DefaultConfiguration\OSK.Storage.Local.DefaultConfiguration.csproj", "{FF0CCB08-4155-4513-933F-710D31787FFD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OSK.Storage.Local.DefaultConfiguration.Polymorphism", "OSK.Storage.Local.DefaultConfiguration.Polymorphism\OSK.Storage.Local.DefaultConfiguration.Polymorphism.csproj", "{A19437FD-FC2D-4F63-BECF-E3AC5F713A6D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +29,22 @@ Global
 		{EBF29957-344A-4C19-9B0A-619DDBA5AAFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EBF29957-344A-4C19-9B0A-619DDBA5AAFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EBF29957-344A-4C19-9B0A-619DDBA5AAFF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{793F7A65-DF7E-4C16-A55E-A9819FD9B19A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{793F7A65-DF7E-4C16-A55E-A9819FD9B19A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{793F7A65-DF7E-4C16-A55E-A9819FD9B19A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{793F7A65-DF7E-4C16-A55E-A9819FD9B19A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0E57EC49-5BB4-4BF5-B804-6E24FD62E938}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0E57EC49-5BB4-4BF5-B804-6E24FD62E938}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0E57EC49-5BB4-4BF5-B804-6E24FD62E938}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0E57EC49-5BB4-4BF5-B804-6E24FD62E938}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FF0CCB08-4155-4513-933F-710D31787FFD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FF0CCB08-4155-4513-933F-710D31787FFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FF0CCB08-4155-4513-933F-710D31787FFD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FF0CCB08-4155-4513-933F-710D31787FFD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A19437FD-FC2D-4F63-BECF-E3AC5F713A6D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A19437FD-FC2D-4F63-BECF-E3AC5F713A6D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A19437FD-FC2D-4F63-BECF-E3AC5F713A6D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A19437FD-FC2D-4F63-BECF-E3AC5F713A6D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

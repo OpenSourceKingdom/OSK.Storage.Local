@@ -18,9 +18,8 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1" />
-		<PackageReference Include="Microsoft.Extensions.Options" Version="8.0.2" />
 		<PackageReference Include="MimeTypesMap" Version="1.0.8" />
-		<PackageReference Include="OSK.Functions.Outputs.Logging" Version="1.1.0" />
+		<PackageReference Include="OSK.Functions.Outputs.Logging" Version="1.2.1" />
 		<PackageReference Include="OSK.Serialization.Abstractions" Version="1.1.2" />
 		<PackageReference Include="OSK.Serialization.Abstractions.Binary" Version="1.1.2" />
 		<PackageReference Include="OSK.Serialization.Abstractions.Json" Version="1.1.2" />

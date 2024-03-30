@@ -2,25 +2,18 @@
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using OSK.Functions.Outputs.Logging;
 using OSK.Storage.Local.Internal.Services;
-using OSK.Storage.Local.Options;
 using OSK.Storage.Local.Ports;
-using System;
 
 namespace OSK.Storage.Local
 {
     public static class ServiceCollectionExtensions
     {
         public static IServiceCollection AddLocalStorage(this IServiceCollection services)
-            => services.AddLocalStorage(_ => { });
-
-        public static IServiceCollection AddLocalStorage(this IServiceCollection services, Action<LocalStorageOptions> optionConfigurator)
         {
             services.AddLoggingFunctionOutputs();
             services
                     .TryAddTransient<ILocalStorageService, LocalStorageService>();
             services.TryAddTransient<ISerializerProvider, SerializerProvider>();
-            services.AddOptions()
-                    .Configure(optionConfigurator);
 
             /*
               
@@ -34,6 +27,13 @@ namespace OSK.Storage.Local
              
              */
 
+            return services;
+        }
+
+        public static IServiceCollection AddSerializationRawDataProcessor<T>(this IServiceCollection services)
+           where T: class, IRawDataProcessor
+        {
+            services.AddTransient<IRawDataProcessor, T>();
             return services;
         }
     }

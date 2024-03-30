@@ -8,8 +8,6 @@ namespace OSK.Storage.Local.Models
 
         public bool IsEncrypted { get; set; }
 
-        public EncryptionAlgorithms EncryptionAlgorithm { get; set; }
-
         public Stream DataStream { get; set; }
     }
 }

@@ -6,7 +6,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using HeyRed.Mime;
-using Microsoft.Extensions.Options;
 using OSK.Functions.Outputs.Abstractions;
 using OSK.Functions.Outputs.Logging.Abstractions;
 using OSK.Storage.Abstractions;
@@ -26,23 +25,24 @@ namespace OSK.Storage.Local.Internal.Services
         private static readonly Encoding DefaultEncoding = Encoding.UTF8;
         public static readonly byte[] LocalStorageSignatureBytes = DefaultEncoding.GetBytes(LocalStorageSignature);
 
+        private readonly IEnumerable<IRawDataProcessor> _dataProcessors;
         private readonly ISerializerProvider _serializerProvider;
         private readonly IServiceProvider _serviceProvider;
-        private readonly IOptions<LocalStorageOptions> _options;
         private readonly IOutputFactory<LocalStorageService> _outputFactory;
 
         #endregion
 
         #region Constructors
 
-        public LocalStorageService(ISerializerProvider serializerProvider,
+        public LocalStorageService(
+            IEnumerable<IRawDataProcessor> dataProcessors,
+            ISerializerProvider serializerProvider,
             IServiceProvider serviceProvider,
-            IOptions<LocalStorageOptions> options,
             IOutputFactory<LocalStorageService> resultFactory)
         {
+            _dataProcessors = dataProcessors ?? throw new ArgumentNullException(nameof(dataProcessors));
             _serializerProvider = serializerProvider ?? throw new ArgumentNullException(nameof(serializerProvider));
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-            _options = options ?? throw new ArgumentNullException(nameof(options));
             _outputFactory = resultFactory ?? throw new ArgumentNullException();
         }
 
@@ -50,7 +50,7 @@ namespace OSK.Storage.Local.Internal.Services
 
         #region ILocalFileStorageService
 
-        public async Task<IOutput<StorageMetaData>> SaveAsync<T>(T data, string fullFilePath, FileSaveOptions options, CancellationToken cancellationToken = default)
+        public async Task<IOutput<StorageMetaData>> SaveAsync<T>(T data, string fullFilePath, LocalSaveOptions options, CancellationToken cancellationToken = default)
         {
             if (data == null)
             {
@@ -64,15 +64,15 @@ namespace OSK.Storage.Local.Internal.Services
             {
                 throw new ArgumentNullException(nameof(options));
             }
-            if (options.SaveOption == SavePermissionType.NoOverwrite && File.Exists(fullFilePath))
+            if (options.SavePermissions == SavePermissionType.NoOverwrite && File.Exists(fullFilePath))
             {
                 return _outputFactory.BadRequest<StorageMetaData>(
                     $"A file already exists at the given path, {fullFilePath}, and overwriting was not allowed. To overwrite an existing file, use {SavePermissionType.AllowOverwrite}.",
                     Constants.LibraryName);
             }
-            if (options.EncryptionAlgorithm.HasValue && string.IsNullOrWhiteSpace(_options.Value.EncryptionKey))
+            if (options.Encrypt && !_dataProcessors.Any(processor => processor is ICryptographicRawDataProcessor))
             {
-                throw new InvalidOperationException($"No {nameof(_options.Value.EncryptionKey)} was provided during configuration startup but a request was made to encrypt the file being saved.");
+                throw new InvalidOperationException($"Unable to encrypt a file with not cryptographic data processor provided in the application configuration.");
             }
 
             var directory = Path.GetDirectoryName(fullFilePath);
@@ -84,36 +84,28 @@ namespace OSK.Storage.Local.Internal.Services
             var serializer = _serializerProvider.GetSerializer(fullFilePath);
             var serializedData = await serializer.SerializeAsync(data, cancellationToken);
 
-            Stream dataStream = null;
             try
             {
-                if (options.EncryptionAlgorithm.HasValue)
+                foreach (var dataProcessor in _dataProcessors)
                 {
-                    var encryptionResult = await _cryptographyService.EncryptAsync(serializedData, GetEncryptionKey(), new CryptographyOptions()
+                    var dataResult = await dataProcessor.ProcessPostSerializationAsync(serializedData, cancellationToken);
+                    if (!dataResult.IsSuccessful)
                     {
-                        EncryptionAlgorithm = ConvertEncryptionAlgorithm(options.EncryptionAlgorithm.Value)
-                    });
-                    if (!encryptionResult.IsSuccessful())
-                    {
-                        return encryptionResult.AsType<StorageMetaData>();
+                        return dataResult.AsType<StorageMetaData>();
                     }
 
-                    dataStream = encryptionResult.Value;
-                }
-                else
-                {
-                    dataStream = new MemoryStream(serializedData);
+                    serializedData = dataResult.Value;
                 }
 
-                await SaveToFileAsync(fullFilePath, dataStream, options.EncryptionAlgorithm);
+                await SaveToFileAsync(fullFilePath, serializedData, options.Encrypt, cancellationToken);
             }
-            finally
+            catch (Exception ex)
             {
-                dataStream?.Dispose();
+                return _outputFactory.Exception<StorageMetaData>(ex, Constants.LibraryName);
             }
 
             return _outputFactory.Success(new StorageMetaData(fullFilePath, serializedData.LongLength,
-                options.EncryptionAlgorithm.HasValue, GetMimeType(fullFilePath), 
+                options.Encrypt, GetMimeType(fullFilePath), 
                 File.GetLastWriteTimeUtc(fullFilePath)));
         }
 
@@ -138,7 +130,7 @@ namespace OSK.Storage.Local.Internal.Services
                 getLocalObjectResult.Value.DataStream,
                 new StorageMetaData(
                     fullFilePath, getLocalObjectResult.Value.Size, getLocalObjectResult.Value.IsEncrypted, 
-                    GetMimeType(fullFilePath), File.GetLastWriteTime(fullFilePath)),
+                    GetMimeType(fullFilePath), File.GetLastWriteTimeUtc(fullFilePath)),
                 _serviceProvider));
         }
 
@@ -176,7 +168,7 @@ namespace OSK.Storage.Local.Internal.Services
                 
                 storageDetails.Add(new StorageMetaData(
                     filePath, getLocalObjectResult.Value.Size, getLocalObjectResult.Value.IsEncrypted,
-                    GetMimeType(filePath), File.GetLastWriteTime(filePath)));
+                    GetMimeType(filePath), File.GetLastWriteTimeUtc(filePath)));
             }
 
             return _outputFactory.Success((IEnumerable<StorageMetaData>)storageDetails);
@@ -209,85 +201,50 @@ namespace OSK.Storage.Local.Internal.Services
             return MimeTypesMap.GetMimeType(filePath);
         }
 
-        private async Task SaveToFileAsync(string filePath, Stream dataStream, EncryptionAlgorithms? alogorithm)
+        private async Task SaveToFileAsync(string filePath, byte[] data, bool isEncrypted, CancellationToken cancellationToken)
         {
             using var fileStream = File.Create(filePath);
 
-            if (alogorithm.HasValue)
+            if (isEncrypted)
             {
-                await fileStream.WriteAsync(LocalStorageSignatureBytes);
-                fileStream.WriteByte((byte)alogorithm.Value);
+                await fileStream.WriteAsync(LocalStorageSignatureBytes, cancellationToken);
             }
-            await dataStream.CopyToAsync(fileStream);
+
+            await fileStream.WriteAsync(data, cancellationToken);
         }
 
         private async Task<IOutput<LocalStorageFile>> GetLocalStorageObjectAsync(string filePath, CancellationToken cancellationToken)
         {
-            using var fileStream = File.OpenRead(filePath);
+            var fileBytes = await File.ReadAllBytesAsync(filePath, cancellationToken);
 
-            var dataSize = fileStream.Length;
-            EncryptionAlgorithms? algorithm = null;
-
-            var fileSignatureBytes = new byte[LocalStorageSignatureBytes.Length];
-            var bytesReadOnSignatureRead = await fileStream.ReadAsync(fileSignatureBytes, cancellationToken);
-            if (bytesReadOnSignatureRead == LocalStorageSignatureBytes.Length
-                && fileSignatureBytes.SequenceEqual(LocalStorageSignatureBytes))
+            var dataSize = fileBytes.Length;
+            var bytesSkipped = 0;
+            var isEncrypted = false;
+            if (fileBytes.Length >= LocalStorageSignature.Length &&
+                fileBytes.Take(LocalStorageSignature.Length).SequenceEqual(LocalStorageSignatureBytes))
             {
-                algorithm = (EncryptionAlgorithms)fileStream.ReadByte();
-                dataSize -= sizeof(byte) * bytesReadOnSignatureRead - sizeof(byte);
-            }
-            else
-            {
-                fileStream.Position = 0;
+                isEncrypted = true;
+                bytesSkipped = fileBytes[LocalStorageSignature.Length + 1];
+                dataSize -= sizeof(byte) * LocalStorageSignature.Length - sizeof(byte);
             }
 
-            Stream dataStream;
-            if (algorithm.HasValue)
+            foreach (var dataProcessor in _dataProcessors.Reverse())
             {
-                if (string.IsNullOrWhiteSpace(_options.Value.EncryptionKey))
+                var dataResult = await dataProcessor.ProcessPreDeserializationAsync(fileBytes, cancellationToken);
+                if (!dataResult.IsSuccessful)
                 {
-                    throw new InvalidOperationException($"No {nameof(_options.Value.EncryptionKey)} was provided during configuration startup but the file located at {filePath} is encrypted.");
+                    return dataResult.AsType<LocalStorageFile>();
                 }
 
-                var decryptResult = await _cryptographyService.DecryptAsync(fileStream, GetEncryptionKey(), new CryptographyOptions()
-                {
-                    EncryptionAlgorithm = ConvertEncryptionAlgorithm(algorithm.Value)
-                });
-                if (!decryptResult.IsSuccessful())
-                {
-                    return decryptResult.AsType<LocalStorageFile>();
-                }
-
-                dataStream = decryptResult.Value;
-            }
-            else
-            {
-                dataStream = new MemoryStream((int)dataSize);
-                await fileStream.CopyToAsync(dataStream);
-                dataStream.Position = 0;
+                fileBytes = dataResult.Value;
             }
 
             return _outputFactory.Success(new LocalStorageFile()
             {
-                IsEncrypted = algorithm.HasValue || File.GetAttributes(filePath).HasFlag(FileAttributes.Encrypted),
-                Size = fileStream.Length,
-                DataStream = dataStream
+                IsEncrypted = isEncrypted || File.GetAttributes(filePath).HasFlag(FileAttributes.Encrypted),
+                Size = dataSize,
+                DataStream = new MemoryStream(fileBytes.Skip(bytesSkipped).ToArray())
             });
-        }
-
-        private Cryptography.Models.EncryptionAlgorithm ConvertEncryptionAlgorithm(EncryptionAlgorithms encryptionAlgorithm)
-        {
-            switch (encryptionAlgorithm)
-            {
-                // case EncryptionAlgorithm.Aes:
-                default:
-                    return Cryptography.Models.EncryptionAlgorithm.Aes;
-            }
-        }
-
-        private byte[] GetEncryptionKey()
-        {
-            return DefaultEncoding.GetBytes(_options.Value.EncryptionKey);
         }
 
         #endregion

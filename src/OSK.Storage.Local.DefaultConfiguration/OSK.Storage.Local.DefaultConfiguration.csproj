@@ -5,11 +5,11 @@
 		<RepositoryUrl>https://github.com/OpenSourceKingdom/OSK.Storage.Local</RepositoryUrl>
 		<RepositoryType>git</RepositoryType>
 		<Description>
-			An extension for OSK.Storage.Local service that adds an integration for cryptography
+			Adds default configuration for Binary, Yaml, and Json serializers to the OSK local storage service
 		</Description>
-		<PackageTags>OpenSourceKingdom, OpenSource, Local, LocalHost, Security, Encryption, Decryption, Cryptography</PackageTags>
+		<PackageTags>OpenSourceKingdom, OpenSource, Local, LocalHost, Default, Serializers</PackageTags>
 		<Authors>BlankDev117</Authors>
-		<Title>OSK.Storage.Local.Cryptography</Title>
+		<Title>OSK.Storage.Local.DefaultConfiguration</Title>
 	</PropertyGroup>
 
 	<PropertyGroup>
@@ -17,8 +17,9 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="OSK.Security.Cryptography" Version="1.2.0" />
-		<PackageReference Include="OSK.Security.Cryptography.Aes" Version="1.0.1" />
+		<PackageReference Include="OSK.Serialization.Binary.Sharp" Version="1.0.0" />
+		<PackageReference Include="OSK.Serialization.Json.SystemTextJson" Version="1.0.0" />
+		<PackageReference Include="OSK.Serialization.Yaml.YamlDotNet" Version="1.0.1" />
 	</ItemGroup>
 
 	<ItemGroup>

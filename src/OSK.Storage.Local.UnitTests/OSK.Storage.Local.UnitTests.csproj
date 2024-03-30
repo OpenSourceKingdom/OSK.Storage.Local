@@ -6,18 +6,28 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.1" />
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
-		<PackageReference Include="OSK.Security.Cryptography.Abstractions" Version="1.0.0" />
-		<PackageReference Include="xunit" Version="2.4.2" />
-		<PackageReference Include="Moq" Version="4.18.4" />
-		<PackageReference Include="xunit.runner.visualstudio" Version="2.4.5">
+		<PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+		<PackageReference Include="OSK.Extensions.Serialization.SystemTextJson.Polymorphism" Version="1.0.0" />
+		<PackageReference Include="OSK.Extensions.Serialization.YamlDotNet.Polymorphism" Version="1.0.0" />
+		<PackageReference Include="OSK.Functions.Outputs.Mocks" Version="1.2.1" />
+		<PackageReference Include="OSK.Serialization.Binary.Sharp" Version="1.0.0" />
+		<PackageReference Include="OSK.Serialization.Json.SystemTextJson" Version="1.0.0" />
+		<PackageReference Include="OSK.Serialization.Polymorphism.Discriminators" Version="1.0.0" />
+		<PackageReference Include="OSK.Serialization.Yaml.YamlDotNet" Version="1.0.1" />
+		<PackageReference Include="xunit" Version="2.7.0" />
+		<PackageReference Include="Moq" Version="4.20.70" />
+		<PackageReference Include="xunit.runner.visualstudio" Version="2.5.7">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
 		</PackageReference>
 	</ItemGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="..\OSK.Storage.Local.Compression.Snappier\OSK.Storage.Local.Compression.Snappier.csproj" />
+	  <ProjectReference Include="..\OSK.Storage.Local.Cryptography\OSK.Storage.Local.Cryptography.csproj" />
 	  <ProjectReference Include="..\OSK.Storage.Local\OSK.Storage.Local.csproj" />
 	</ItemGroup>
 

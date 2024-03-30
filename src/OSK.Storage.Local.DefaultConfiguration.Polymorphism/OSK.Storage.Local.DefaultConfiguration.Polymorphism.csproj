@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>netstandard2.1</TargetFramework>
+		<RepositoryUrl>https://github.com/OpenSourceKingdom/OSK.Storage.Local</RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<Description>
+			Adds default configuration for Binary, Yaml, and Json polymorphism to the OSK local storage service
+		</Description>
+		<PackageTags>OpenSourceKingdom, OpenSource, Local, LocalHost, Default, Polymorphism</PackageTags>
+		<Authors>BlankDev117</Authors>
+		<Title>OSK.Storage.Local.DefaultConfiguration.Polymorphism</Title>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="OSK.Extensions.Serialization.SystemTextJson.Polymorphism" Version="1.0.0" />
+		<PackageReference Include="OSK.Extensions.Serialization.YamlDotNet.Polymorphism" Version="1.0.0" />
+		<PackageReference Include="OSK.Serialization.Polymorphism.Discriminators" Version="1.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\OSK.Storage.Local.DefaultConfiguration\OSK.Storage.Local.DefaultConfiguration.csproj" />
+	</ItemGroup>
+
+</Project>
