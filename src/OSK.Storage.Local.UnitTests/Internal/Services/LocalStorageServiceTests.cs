@@ -35,6 +35,7 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
         public LocalStorageServiceTests(FileStorageFixture fixture)
         {
             _fileStorageFixture = fixture;
+            _fileStorageFixture.NewDirectory();
             fixture.SetEncoding(DefaultEncoding);
             _fileStorageFixture.ClearTestDirectory();
 
@@ -180,7 +181,7 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
 
             Assert.Equal(".txt", result.Value.Extension);
             Assert.Equal(fileName, result.Value.FileName);
-            Assert.Equal(FileStorageFixture.TestDirectory, result.Value.StorageDirectory);
+            Assert.Equal(_fileStorageFixture.TestDirectory, result.Value.StorageDirectory);
             Assert.Equal(testFilePath, result.Value.FullStoragePath);
             Assert.Equal("text/plain", result.Value.StorageMimeType);
             Assert.False(result.Value.IsEncrypted);
@@ -209,7 +210,7 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
 
             Assert.Equal(testFilePath, result.Value.FullStoragePath);
             Assert.Equal(fileName, result.Value.FileName);
-            Assert.Equal(FileStorageFixture.TestDirectory, result.Value.StorageDirectory);
+            Assert.Equal(_fileStorageFixture.TestDirectory, result.Value.StorageDirectory);
             Assert.Equal(".txt", result.Value.Extension);
             Assert.Equal("text/plain", result.Value.StorageMimeType);
             Assert.False(result.Value.IsEncrypted);
@@ -246,7 +247,7 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
 
             Assert.Equal(testFilePath, result.Value.FullStoragePath);
             Assert.Equal(fileName, result.Value.FileName);
-            Assert.Equal(FileStorageFixture.TestDirectory, result.Value.StorageDirectory);
+            Assert.Equal(_fileStorageFixture.TestDirectory, result.Value.StorageDirectory);
             Assert.Equal(".txt", result.Value.Extension);
             Assert.Equal("text/plain", result.Value.StorageMimeType);
             Assert.True(result.Value.IsEncrypted);
@@ -296,7 +297,6 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
             _mockBinarySerializer.Setup(m => m.DeserializeAsync(It.IsAny<byte[]>(), It.IsAny<Type>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((byte[] input, byte[] _, CancellationToken _) => DefaultEncoding.GetString(input));
 
-
             var mockCryptographicDataProcessor = new Mock<ICryptographicRawDataProcessor>();
             mockCryptographicDataProcessor.Setup(m => m.ProcessPostSerializationAsync(It.IsAny<byte[]>(),
                 It.IsAny<CancellationToken>()))
@@ -317,7 +317,12 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
             var result = await _localStorageService.GetAsync(testFilePath);
 
             // Assert
-            Assert.False(result.IsSuccessful);
+            Assert.True(result.IsSuccessful);
+            Assert.True(result.Value.MetaData.IsEncrypted);
+
+            using var storageObject = result.Value;
+
+            await Assert.ThrowsAsync<InvalidOperationException>(async() => await storageObject.StreamAsAsync<string>());
         }
 
         [Fact]
@@ -339,7 +344,9 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
             Assert.NotNull(result.Value.Value);
             Assert.NotNull(result.Value.MetaData);
 
-            var value = DefaultEncoding.GetString(((MemoryStream)result.Value.Value).ToArray());
+            using var storageObject = result.Value;
+            var bytes = await storageObject.StreamAsAsync<byte[]>();
+            var value = Encoding.UTF8.GetString(bytes);
 
             Assert.Equal(text, value);
             Assert.Equal(filename, result.Value.MetaData.FileName);
@@ -376,7 +383,7 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
         public async void GetStorageDetailsAsync_EmptyDirectory_ReturnsEmptyList()
         {
             // Act
-            var result = await _localStorageService.GetStorageDetailsAsync(FileStorageFixture.TestDirectory, null);
+            var result = await _localStorageService.GetStorageDetailsAsync(_fileStorageFixture.TestDirectory, null);
 
             // Assert
             Assert.True(result.IsSuccessful);
@@ -418,7 +425,7 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
                 Encrypt = true
             });
 
-            var getResult = await _localStorageService.GetStorageDetailsAsync(FileStorageFixture.TestDirectory, null);
+            var getResult = await _localStorageService.GetStorageDetailsAsync(_fileStorageFixture.TestDirectory, null);
 
             // Assert
             Assert.True(getResult.IsSuccessful);
@@ -473,7 +480,7 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
                 Encrypt = true
             });
 
-            var getResult = await _localStorageService.GetStorageDetailsAsync(FileStorageFixture.TestDirectory, new FileSearchOptions()
+            var getResult = await _localStorageService.GetStorageDetailsAsync(_fileStorageFixture.TestDirectory, new FileSearchOptions()
             {
                 Extension = ".special"
             });
@@ -567,6 +574,7 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
             Assert.True(saveResult.IsSuccessful);
 
             var getResult = await _localStorageService.GetAsync(path);
+            getResult.Value.Dispose();
 
             Assert.True(getResult.IsSuccessful);
         }
