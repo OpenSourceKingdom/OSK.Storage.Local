@@ -5,27 +5,37 @@ namespace OSK.Storage.Local.UnitTests.Helpers.TestFixtures
 {
     public class FileStorageFixture : IDisposable
     {
-        public static readonly string TestDirectory = Path.Combine(".", "TestData");
+        private static readonly string TestDirectoryTemplate = Path.Combine(".", "TestData");
         private Encoding _encoding = Encoding.UTF8;
+
+        private string _testDirectory;
 
         public FileStorageFixture()
         {
-            Directory.CreateDirectory(TestDirectory);
+            NewDirectory();
+        }
 
-            Assert.True(Directory.Exists(TestDirectory));
+        public void NewDirectory()
+        {
+            _testDirectory = TestDirectoryTemplate;
+            Directory.CreateDirectory(_testDirectory);
+
+            Assert.True(Directory.Exists(_testDirectory));
         }
 
         public void Dispose()
         {
-            if (Directory.Exists(TestDirectory))
+            if (Directory.Exists(_testDirectory))
             {
-                Directory.Delete(TestDirectory, true);
+                Directory.Delete(_testDirectory, true);
             }
 
-            Assert.False(Directory.Exists(TestDirectory));
+            Assert.False(Directory.Exists(_testDirectory));
         }
 
         #region Helpers
+
+        public string TestDirectory => _testDirectory;
 
         public void SetEncoding(Encoding encoding)
         {
@@ -51,6 +61,7 @@ namespace OSK.Storage.Local.UnitTests.Helpers.TestFixtures
         public string CreateTestFile(string fileNameWithoutExtension, string content, string extension = ".txt")
         {
             var filePath = GetFilePath($"{fileNameWithoutExtension}{extension}");
+
             using var fileStream = File.Create(filePath);
 
             fileStream.Write(_encoding.GetBytes(content));
@@ -60,12 +71,12 @@ namespace OSK.Storage.Local.UnitTests.Helpers.TestFixtures
 
         public string GetFilePath(string fileNameWithExtension)
         {
-            return Path.Combine(TestDirectory, fileNameWithExtension);
+            return Path.Combine(_testDirectory, fileNameWithExtension);
         }
 
         public void ClearTestDirectory()
         {
-            var directoryInfo = new DirectoryInfo(TestDirectory);
+            var directoryInfo = new DirectoryInfo(_testDirectory);
             foreach (var file in directoryInfo.GetFiles())
             {
                 file.Delete();
@@ -75,7 +86,7 @@ namespace OSK.Storage.Local.UnitTests.Helpers.TestFixtures
                 dir.Delete(true);
             }
 
-            var directoryExists = Directory.Exists(TestDirectory);
+            var directoryExists = Directory.Exists(_testDirectory);
 
             Assert.True(directoryExists);
         }

@@ -120,7 +120,7 @@ namespace OSK.Storage.Local.Internal.Services
                 return _outputFactory.NotFound<StorageObject>($"The following file {fullFilePath} did not exist.");
             }
 
-            var getLocalObjectResult = await GetLocalStorageObjectAsync(fullFilePath, cancellationToken);
+            var getLocalObjectResult = await GetLocalStorageObjectAsync(fullFilePath, keepStreamOpen: true, cancellationToken);
             if (!getLocalObjectResult.IsSuccessful)
             {
                 return getLocalObjectResult.AsType<StorageObject>();
@@ -160,7 +160,7 @@ namespace OSK.Storage.Local.Internal.Services
                 var fileInfo = new FileInfo(filePath);
                 fileInfo.Refresh();
 
-                var getLocalObjectResult = await GetLocalStorageObjectAsync(filePath, cancellationToken);
+                var getLocalObjectResult = await GetLocalStorageObjectAsync(filePath, keepStreamOpen: false, cancellationToken);
                 if (!getLocalObjectResult.IsSuccessful)
                 {
                     return getLocalObjectResult.AsType<IEnumerable<StorageMetaData>>();
@@ -169,6 +169,8 @@ namespace OSK.Storage.Local.Internal.Services
                 storageDetails.Add(new StorageMetaData(
                     filePath, getLocalObjectResult.Value.Size, getLocalObjectResult.Value.IsEncrypted,
                     GetMimeType(filePath), File.GetLastWriteTimeUtc(filePath)));
+
+                getLocalObjectResult.Value.Dispose();
             }
 
             return _outputFactory.Success((IEnumerable<StorageMetaData>)storageDetails);
@@ -213,37 +215,35 @@ namespace OSK.Storage.Local.Internal.Services
             await fileStream.WriteAsync(data, cancellationToken);
         }
 
-        private async Task<IOutput<LocalStorageFile>> GetLocalStorageObjectAsync(string filePath, CancellationToken cancellationToken)
+        private async Task<IOutput<LocalStorageFile>> GetLocalStorageObjectAsync(string filePath, bool keepStreamOpen, CancellationToken cancellationToken)
         {
-            var fileBytes = await File.ReadAllBytesAsync(filePath, cancellationToken);
-
-            var dataSize = fileBytes.Length;
-            var bytesSkipped = 0;
+            var fileStream = File.Open(filePath, FileMode.Open, FileAccess.Read, FileShare.Read);
+            var dataSize = fileStream.Length;
             var isEncrypted = false;
-            if (fileBytes.Length >= LocalStorageSignature.Length &&
-                fileBytes.Take(LocalStorageSignature.Length).SequenceEqual(LocalStorageSignatureBytes))
+            if (fileStream.Length >= LocalStorageSignature.Length)
             {
-                isEncrypted = true;
-                bytesSkipped = fileBytes[LocalStorageSignature.Length + 1];
-                dataSize -= sizeof(byte) * LocalStorageSignature.Length - sizeof(byte);
+                var signatureBytes = new byte[LocalStorageSignature.Length];
+                await fileStream.ReadAsync(signatureBytes, cancellationToken);
+                if (signatureBytes.SequenceEqual(LocalStorageSignatureBytes))
+                {
+                    isEncrypted = true;
+                    dataSize -= sizeof(byte) * LocalStorageSignature.Length - sizeof(byte);
+                }
+                else {
+                    fileStream.Position = 0;
+                }
             }
 
-            foreach (var dataProcessor in _dataProcessors.Reverse())
+            if (!keepStreamOpen)
             {
-                var dataResult = await dataProcessor.ProcessPreDeserializationAsync(fileBytes, cancellationToken);
-                if (!dataResult.IsSuccessful)
-                {
-                    return dataResult.AsType<LocalStorageFile>();
-                }
-
-                fileBytes = dataResult.Value;
+                await fileStream.DisposeAsync();
             }
 
             return _outputFactory.Success(new LocalStorageFile()
             {
                 IsEncrypted = isEncrypted || File.GetAttributes(filePath).HasFlag(FileAttributes.Encrypted),
                 Size = dataSize,
-                DataStream = new MemoryStream(fileBytes.Skip(bytesSkipped).ToArray())
+                DataStream = keepStreamOpen ? fileStream : null
             });
         }
 
