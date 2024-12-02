@@ -7,9 +7,11 @@
 		</Description>
 		<PackageTags>OpenSourceKingdom, OpenSource, Data, Object, Storage, Saving, Loading, Delete, Get, Serialize, Deserialize, Local, LocalHost</PackageTags>
 		<Title>OSK.Storage.Local</Title>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
-
+	
 	<ItemGroup>
+		<None Include="..\..\README.md" Pack="true" PackagePath="\"/>
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.0" />
 		<PackageReference Include="MimeTypesMap" Version="1.0.8" />
 		<PackageReference Include="OSK.Functions.Outputs.Logging" Version="1.5.1" />

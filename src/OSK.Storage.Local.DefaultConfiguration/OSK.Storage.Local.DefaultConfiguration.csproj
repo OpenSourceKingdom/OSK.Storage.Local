@@ -7,9 +7,11 @@
 		</Description>
 		<PackageTags>OpenSourceKingdom, OpenSource, Local, LocalHost, Default, Serializers</PackageTags>
 		<Title>OSK.Storage.Local.DefaultConfiguration</Title>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
-
+	
 	<ItemGroup>
+		<None Include="..\..\README.md" Pack="true" PackagePath="\"/>
 		<PackageReference Include="OSK.Serialization.Binary.Sharp" Version="1.0.1" />
 		<PackageReference Include="OSK.Serialization.Json.SystemTextJson" Version="1.0.1" />
 		<PackageReference Include="OSK.Serialization.Yaml.YamlDotNet" Version="1.0.2" />

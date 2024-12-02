@@ -7,9 +7,11 @@
 		</Description>
 		<PackageTags>OpenSourceKingdom, OpenSource, Local, LocalHost, Compression, Data, Snappy</PackageTags>
 		<Title>OSK.Storage.Local.Compression.Snappier</Title>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
 
 	<ItemGroup>
+		<None Include="..\..\README.md" Pack="true" PackagePath="\"/>
 		<PackageReference Include="Snappier" Version="1.1.6" />
 	</ItemGroup>
 

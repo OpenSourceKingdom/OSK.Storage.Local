@@ -7,9 +7,11 @@
 		</Description>
 		<PackageTags>OpenSourceKingdom, OpenSource, Local, LocalHost, Security, Encryption, Decryption, Cryptography</PackageTags>
 		<Title>OSK.Storage.Local.Cryptography</Title>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
 
 	<ItemGroup>
+		<None Include="..\..\README.md" Pack="true" PackagePath="\"/>
 		<PackageReference Include="OSK.Security.Cryptography" Version="2.1.0" />
 		<PackageReference Include="OSK.Security.Cryptography.Aes" Version="1.1.0" />
 	</ItemGroup>
