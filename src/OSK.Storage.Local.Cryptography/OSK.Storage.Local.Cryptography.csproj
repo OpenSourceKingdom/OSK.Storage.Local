@@ -17,8 +17,8 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="OSK.Security.Cryptography" Version="1.2.0" />
-		<PackageReference Include="OSK.Security.Cryptography.Aes" Version="1.0.1" />
+		<PackageReference Include="OSK.Security.Cryptography" Version="2.1.0" />
+		<PackageReference Include="OSK.Security.Cryptography.Aes" Version="1.1.0" />
 	</ItemGroup>
 
 	<ItemGroup>
