@@ -3,9 +3,12 @@ using OSK.Serialization.Abstractions;
 using OSK.Serialization.Abstractions.Binary;
 using OSK.Serialization.Abstractions.Json;
 using OSK.Serialization.Abstractions.Yaml;
+using OSK.Storage.Local.Models;
 using OSK.Storage.Local.Ports;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace OSK.Storage.Local.Internal.Services
 {
@@ -14,13 +17,15 @@ namespace OSK.Storage.Local.Internal.Services
         #region Variables
 
         private readonly IServiceProvider _serviceProvider;
+        private readonly IEnumerable<SerializerExtensionDescriptor> _extensionDescriptors;
 
         #endregion
 
         #region Constructors
 
-        public SerializerProvider(IServiceProvider serviceProvider)
+        public SerializerProvider(IEnumerable<SerializerExtensionDescriptor> extensionDescriptors, IServiceProvider serviceProvider)
         {
+            _extensionDescriptors = extensionDescriptors ?? throw new ArgumentNullException(nameof(extensionDescriptors));
             _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
         }
 
@@ -32,17 +37,16 @@ namespace OSK.Storage.Local.Internal.Services
         {
             var extension = Path.GetExtension(filePath);
 
-            ISerializer serializer = extension switch
+            var serializerType = extension switch
             {
-                ".yaml" => _serviceProvider.GetService<IYamlSerializer>(),
-                ".json" => _serviceProvider.GetService<IJsonSerializer>(),
-                _ => null
+                ".bin" => typeof(IBinarySerializer),
+                ".yaml" => typeof(IYamlSerializer),
+                ".json" => typeof(IJsonSerializer),
+                "" => typeof(IBinarySerializer),
+                _ => _extensionDescriptors.FirstOrDefault(descriptor => descriptor.Extensions.Contains(extension))?.SerializerType
             };
 
-            return serializer == null
-                // Binary should always be available for non specific serialization
-                ? _serviceProvider.GetRequiredService<IBinarySerializer>()
-                : serializer;
+            return (ISerializer)_serviceProvider.GetRequiredService(serializerType);
         }
 
         #endregion

@@ -62,7 +62,7 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
         #region SaveAsync
 
         [Fact]
-        public async void SaveAsync_NullData_ThrowsArgumentNullException()
+        public async Task SaveAsync_NullData_ThrowsArgumentNullException()
         {
             // Arrange
             var filePath = _fileStorageFixture.GetFilePath("Test");
@@ -72,21 +72,21 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
         }
 
         [Fact]
-        public async void SaveAsync_NullFilePath_ThrowsArgumentNullException()
+        public async Task SaveAsync_NullFilePath_ThrowsArgumentNullException()
         {
             // Arrange/Act/Assert
             await Assert.ThrowsAsync<ArgumentNullException>(() => _localStorageService.SaveAsync("Test", null, new LocalSaveOptions()));
         }
 
         [Fact]
-        public async void SaveAsync_EmptyFilePath_ThrowsArgumentNullException()
+        public async Task SaveAsync_EmptyFilePath_ThrowsArgumentNullException()
         {
             // Arrange/Act/Assert
             await Assert.ThrowsAsync<ArgumentNullException>(() => _localStorageService.SaveAsync("Test", "", new LocalSaveOptions()));
         }
 
         [Fact]
-        public async void SaveAsync_NullStorageOptions_ThrowsArgumentNullException()
+        public async Task SaveAsync_NullStorageOptions_ThrowsArgumentNullException()
         {
             // Arrange
             var filePath = _fileStorageFixture.GetFilePath("Test");
@@ -97,7 +97,7 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
         }
 
         [Fact]
-        public async void SaveAsync_EncryptionRequestWithoutICryptographicRawDataProcessor_ThrowsArgumentNullException()
+        public async Task SaveAsync_EncryptionRequestWithoutICryptographicRawDataProcessor_ThrowsArgumentNullException()
         {
             // Arrange
             var filePath = _fileStorageFixture.GetFilePath("Test");
@@ -111,7 +111,7 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
         }
 
         [Fact]
-        public async void SaveAsync_FileExistsNoOverwritePermission_ReturnsError()
+        public async Task SaveAsync_FileExistsNoOverwritePermission_ReturnsError()
         {
             // Arrange
             var testFilePath = _fileStorageFixture.CreateTestFile("testTextFile", "Test");
@@ -130,7 +130,7 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
         }
 
         [Fact]
-        public async void SaveAsync_FileDoesNotExist_UsesEncryption_EncryptingError_ReturnsError()
+        public async Task SaveAsync_FileDoesNotExist_UsesEncryption_EncryptingError_ReturnsError()
         {
             // Arrange
             _mockBinarySerializer.Setup(m => m.SerializeAsync(It.IsAny<object>(), It.IsAny<CancellationToken>()))
@@ -159,7 +159,7 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
         }
 
         [Fact]
-        public async void SaveAsync_FileDoesNotExist_NoEncryption_ReturnsSuccess()
+        public async Task SaveAsync_FileDoesNotExist_NoEncryption_ReturnsSuccess()
         {
             // Arrange
             _mockBinarySerializer.Setup(m => m.SerializeAsync(It.IsAny<object>(), It.IsAny<CancellationToken>()))
@@ -188,7 +188,7 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
         }
 
         [Fact]
-        public async void SaveAsync_FileExistsOverwritingAllowed_NoEncryption_ReturnsSuccess()
+        public async Task SaveAsync_FileExistsOverwritingAllowed_NoEncryption_ReturnsSuccess()
         {
             // Arrange
             _mockBinarySerializer.Setup(m => m.SerializeAsync(It.IsAny<object>(), It.IsAny<CancellationToken>()))
@@ -218,7 +218,7 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
         }
 
         [Fact]
-        public async void SaveAsync_FileDoesNotExist_UsesEncryption_ReturnsSuccess()
+        public async Task SaveAsync_FileDoesNotExist_UsesEncryption_ReturnsSuccess()
         {
             // Arrange
             _mockBinarySerializer.Setup(m => m.SerializeAsync(It.IsAny<object>(), It.IsAny<CancellationToken>()))
@@ -259,21 +259,21 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
         #region GetAsync
 
         [Fact]
-        public async void GetAsync_NullFilePath_ThrowsArgumentNullException()
+        public async Task GetAsync_NullFilePath_ThrowsArgumentNullException()
         {
             // Assert/Act/Assert
             await Assert.ThrowsAsync<ArgumentNullException>(() => _localStorageService.GetAsync(null));
         }
 
         [Fact]
-        public async void GetAsync_EmptyFilePath_ThrowsArgumentNullException()
+        public async Task GetAsync_EmptyFilePath_ThrowsArgumentNullException()
         {
             // Arrange/Act/Assert
             await Assert.ThrowsAsync<ArgumentNullException>(() => _localStorageService.GetAsync(""));
         }
 
         [Fact]
-        public async void GetAsync_FilePathDoesNotExist_ReturnsError()
+        public async Task GetAsync_FilePathDoesNotExist_ReturnsError()
         {
             // Act
             var result = await _localStorageService.GetAsync("NotARealPath");
@@ -284,7 +284,7 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
         }
 
         [Fact]
-        public async void GetAsync_FilePathExists_IsEncrypted_DecryptionReturnsError()
+        public async Task GetAsync_FilePathExists_IsEncrypted_DecryptionReturnsError()
         {
             // Arrange
             var text = "Test text for file exists";
@@ -326,7 +326,7 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
         }
 
         [Fact]
-        public async void GetAsync_FilePathExists_NotEncrypted_ReturnsSuccess()
+        public async Task GetAsync_FilePathExists_NotEncrypted_ReturnsSuccess()
         {
             // Arrange
             _mockBinarySerializer.Setup(m => m.DeserializeAsync(It.IsAny<byte[]>(), It.IsAny<Type>(), It.IsAny<CancellationToken>()))
@@ -363,14 +363,14 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
         [Theory]
         [InlineData(null)]
         [InlineData("")]
-        public async void GetStorageDetailsAsync_InvalidDirectoryPath_ThrowsArgumentNullException(string path)
+        public async Task GetStorageDetailsAsync_InvalidDirectoryPath_ThrowsArgumentNullException(string path)
         {
             // Arrange/Act/Assert
             await Assert.ThrowsAsync<ArgumentNullException>(() => _localStorageService.GetStorageDetailsAsync(path, null));
         }
 
         [Fact]
-        public async void GetStorageDetailsAsync_DirectoryPathDoesNotExist_ReturnsError()
+        public async Task GetStorageDetailsAsync_DirectoryPathDoesNotExist_ReturnsError()
         {
             // Act
             var result = await _localStorageService.GetStorageDetailsAsync("bad/Path", null);
@@ -380,7 +380,7 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
         }
 
         [Fact]
-        public async void GetStorageDetailsAsync_EmptyDirectory_ReturnsEmptyList()
+        public async Task GetStorageDetailsAsync_EmptyDirectory_ReturnsEmptyList()
         {
             // Act
             var result = await _localStorageService.GetStorageDetailsAsync(_fileStorageFixture.TestDirectory, null);
@@ -391,7 +391,7 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
         }
 
         [Fact]
-        public async void GetStorageDetailsAsync_DirectoryHasObjects_NoExtension_ReturnsllFiles()
+        public async Task GetStorageDetailsAsync_DirectoryHasObjects_NoExtension_ReturnsllFiles()
         {
             // Arrange
             var testTexts = new[]
@@ -446,7 +446,7 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
         }
 
         [Fact]
-        public async void GetStorageDetailsAsync_DirectoryHasObjects_Extension_ReturnsFilesWithExtension()
+        public async Task GetStorageDetailsAsync_DirectoryHasObjects_Extension_ReturnsFilesWithExtension()
         {
             // Arrange
             var testTexts = new[]
@@ -497,7 +497,7 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
         [Theory]
         [InlineData(null)]
         [InlineData("")]
-        public async void DeleteAsync_NullAndEmptyString_ReturnsSuccess(string path)
+        public async Task DeleteAsync_NullAndEmptyString_ReturnsSuccess(string path)
         {
             // Act
             var result = await _localStorageService.DeleteAsync(path);
@@ -507,7 +507,7 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
         }
 
         [Fact]
-        public async void DeleteAsync_PathDoesNotExist_ReturnsSuccess()
+        public async Task DeleteAsync_PathDoesNotExist_ReturnsSuccess()
         {
             // Act
             var result = await _localStorageService.DeleteAsync("bad/path");
@@ -517,7 +517,7 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
         }
 
         [Fact]
-        public async void DeleteAsync_PathExists_DeletesFile_ReturnsSuccess()
+        public async Task DeleteAsync_PathExists_DeletesFile_ReturnsSuccess()
         {
             // Arrange
             var testFilePath = _fileStorageFixture.CreateTestFile("testFile", "test");
@@ -537,7 +537,7 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
         #region e2e
 
         [Fact]
-        public async void E2E_SaveFollowedByGet_ReturnsExpectedValue()
+        public async Task E2E_SaveFollowedByGet_ReturnsExpectedValue()
         {
             var testObj = new TestFile()
             {

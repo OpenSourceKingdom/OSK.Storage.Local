@@ -1,7 +1,9 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using System.Linq;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using OSK.Functions.Outputs.Logging;
 using OSK.Storage.Local.Internal.Services;
+using OSK.Storage.Local.Models;
 using OSK.Storage.Local.Ports;
 
 namespace OSK.Storage.Local
@@ -11,21 +13,19 @@ namespace OSK.Storage.Local
         public static IServiceCollection AddLocalStorage(this IServiceCollection services)
         {
             services.AddLoggingFunctionOutputs();
-            services
-                    .TryAddTransient<ILocalStorageService, LocalStorageService>();
+            services.TryAddTransient<ILocalStorageService, LocalStorageService>();
             services.TryAddTransient<ISerializerProvider, SerializerProvider>();
 
-            /*
-              
-             
-                    .AddBinarySerialization()
-                    .AddJsonSerialization()
-                    .AddYamlSerialization()
-                    .AddPolymorphismEnumDiscriminatorStrategy()
-                    .AddYamlPolymorphism()
-                    .AddJsonPolymorphismConverter() 
-             
-             */
+            return services;
+        }
+
+        public static IServiceCollection AddSerializerExtensionDescriptor<ISerializer>(this IServiceCollection services, params string[] extensions)
+        {
+            services.AddTransient(_ => new SerializerExtensionDescriptor()
+            {
+                Extensions = extensions.ToHashSet(),
+                SerializerType = typeof(ISerializer)
+            });
 
             return services;
         }

@@ -2,6 +2,7 @@
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using OSK.Extensions.Serialization.SystemTextJson.Polymorphism;
 using OSK.Extensions.Serialization.YamlDotNet.Polymorphism;
+using OSK.Serialization.Abstractions.Json;
 using OSK.Serialization.Binary.Sharp;
 using OSK.Serialization.Json.SystemTextJson;
 using OSK.Serialization.Polymorphism.Discriminators;
@@ -117,7 +118,8 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
 
                 services
                     .AddLocalStorageCryptography()
-                    .AddLocalStorageSnappierCompression();
+                    .AddLocalStorageSnappierCompression()
+                    .AddSerializerExtensionDescriptor<IJsonSerializer>(".testExtension");
             });
 
             var file = new TestFile()
@@ -160,6 +162,12 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
             });
             Assert.True(result4.IsSuccessful);
 
+            var result5 = await storageService.SaveAsync(file, FileStorageFixture.GetFilePath("test.testExtension"), new LocalSaveOptions()
+            {
+                SavePermissions = SavePermissionType.AllowOverwrite
+            });
+            Assert.True(result5.IsSuccessful);
+
             var jsonResult = await storageService.GetAsync(FileStorageFixture.GetFilePath("test.json"));
             Assert.True(jsonResult.IsSuccessful);
             using var o = jsonResult.Value;
@@ -179,6 +187,11 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
             Assert.True(unknownResult.IsSuccessful);
             using var o3 = unknownResult.Value;
             _ = await o3.StreamAsAsync<TestFile>();
+
+            var customResult = await storageService.GetAsync(FileStorageFixture.GetFilePath("test.testExtension"));
+            Assert.True(customResult.IsSuccessful);
+            using var o4 = customResult.Value;
+            _ = await o4.StreamAsAsync<TestFile>();
         }
 
         #region Helpers
