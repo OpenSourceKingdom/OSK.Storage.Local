@@ -2,18 +2,11 @@
 
 	<PropertyGroup>
 		<TargetFramework>netstandard2.1</TargetFramework>
-		<RepositoryUrl>https://github.com/OpenSourceKingdom/OSK.Storage.Local</RepositoryUrl>
-		<RepositoryType>git</RepositoryType>
 		<Description>
 			An implementation of a storage service that is specific to local machine storage in .NET
 		</Description>
 		<PackageTags>OpenSourceKingdom, OpenSource, Data, Object, Storage, Saving, Loading, Delete, Get, Serialize, Deserialize, Local, LocalHost</PackageTags>
-		<Authors>BlankDev117</Authors>
 		<Title>OSK.Storage.Local</Title>
-	</PropertyGroup>
-
-	<PropertyGroup>
-		<PackageLicenseExpression>MIT</PackageLicenseExpression>
 	</PropertyGroup>
 
 	<ItemGroup>
