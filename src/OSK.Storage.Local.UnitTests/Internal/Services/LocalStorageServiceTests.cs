@@ -159,6 +159,45 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
         }
 
         [Fact]
+        public async Task SaveAsync_FileDoesNotExist_EncryptionAvailableButUnused_ReturnsSuccessfully()
+        {
+            // Arrange
+            _mockBinarySerializer.Setup(m => m.SerializeAsync(It.IsAny<object>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((object input, CancellationToken _) => DefaultEncoding.GetBytes((string)input));
+
+            var mockCryptographicDataProcessor = new Mock<ICryptographicRawDataProcessor>();
+            mockCryptographicDataProcessor.Setup(m => m.ProcessPostSerializationAsync(It.IsAny<byte[]>(),
+                It.IsAny<CancellationToken>()))
+                .ReturnsAsync(_mockOutputFactory.BadRequest<byte[]>("A bad day!"));
+            _dataProcessors.Add(mockCryptographicDataProcessor.Object);
+
+            var text = "Test Text";
+            var fileName = "testTextFile";
+            var testFilePath = _fileStorageFixture.GetFilePath(fileName + ".txt");
+            var storageOptions = new LocalSaveOptions()
+            {
+                Encrypt = false,
+                SavePermissions = SavePermissionType.NoOverwrite
+            };
+
+            // Act
+            var result = await _localStorageService.SaveAsync(text, testFilePath, storageOptions);
+
+            // Assert
+            Assert.True(result.IsSuccessful);
+
+            Assert.Equal(".txt", result.Value.Extension);
+            Assert.Equal(fileName, result.Value.FileName);
+            Assert.Equal(_fileStorageFixture.TestDirectory, result.Value.StorageDirectory);
+            Assert.Equal(testFilePath, result.Value.FullStoragePath);
+            Assert.Equal("text/plain", result.Value.StorageMimeType);
+            Assert.False(result.Value.IsEncrypted);
+
+            mockCryptographicDataProcessor.Verify(m => m.ProcessPostSerializationAsync(It.IsAny<byte[]>(),
+                It.IsAny<CancellationToken>()), Times.Never);
+        }
+
+        [Fact]
         public async Task SaveAsync_FileDoesNotExist_NoEncryption_ReturnsSuccess()
         {
             // Arrange
