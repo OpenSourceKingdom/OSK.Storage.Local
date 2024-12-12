@@ -10,6 +10,7 @@
 		<PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.0" />
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.12.0" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.0" />
+		<PackageReference Include="OSK.Extensions.Object.DeepEquals" Version="1.1.0" />
 		<PackageReference Include="OSK.Extensions.Serialization.SystemTextJson.Polymorphism" Version="1.0.2" />
 		<PackageReference Include="OSK.Extensions.Serialization.YamlDotNet.Polymorphism" Version="1.0.1" />
 		<PackageReference Include="OSK.Functions.Outputs.Mocks" Version="1.5.2" />

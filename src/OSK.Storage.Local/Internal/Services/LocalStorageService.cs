@@ -131,6 +131,11 @@ namespace OSK.Storage.Local.Internal.Services
                 return getLocalObjectResult.AsType<StorageObject>();
             }
 
+            if (getLocalObjectResult.Value.IsEncrypted) 
+            {
+                getLocalObjectResult.Value.DataStream.Position = LocalStorageSignature.Length;
+            }
+
             return _outputFactory.Success((StorageObject)new LocalStorageObject(
                 getLocalObjectResult.Value.DataStream,
                 new StorageMetaData(
