@@ -44,6 +44,11 @@ namespace OSK.Storage.Local.Models
             var streamBytes = await ReadStreamBytesAsync(cancellationToken);
             foreach (var dataProcessor in dataProcessors.Reverse())
             {
+                if (decrypted && dataProcessor is ICryptographicRawDataProcessor)
+                {
+                    continue;
+                }
+
                 var dataResult = await dataProcessor.ProcessPreDeserializationAsync(streamBytes, cancellationToken);
                 if (!dataResult.IsSuccessful)
                 {

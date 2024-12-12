@@ -88,6 +88,11 @@ namespace OSK.Storage.Local.Internal.Services
             {
                 foreach (var dataProcessor in _dataProcessors)
                 {
+                    if (!options.Encrypt && dataProcessor is ICryptographicRawDataProcessor)
+                    {
+                        continue;
+                    }
+
                     var dataResult = await dataProcessor.ProcessPostSerializationAsync(serializedData, cancellationToken);
                     if (!dataResult.IsSuccessful)
                     {
