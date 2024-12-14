@@ -122,7 +122,7 @@ namespace OSK.Storage.Local.Internal.Services
             }
             if (!File.Exists(fullFilePath))
             {
-                return _outputFactory.NotFound<StorageObject>($"The following filwe {fullFilePath} did not exist.");
+                return _outputFactory.NotFound<StorageObject>($"The following file {fullFilePath} did not exist.");
             }
 
             var getLocalObjectResult = await GetLocalStorageObjectAsync(fullFilePath, keepStreamOpen: true, cancellationToken);
