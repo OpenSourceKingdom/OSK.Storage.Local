@@ -119,8 +119,7 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
             // Arrange
             _services.TryAddTransient<ICryptographicKeyRepository, TestKeyRepository>();
             _services
-                .AddCryptography()
-                    .AddLocalStorageCryptography()
+                .AddLocalStorageCryptography()
                     .AddAesKeyService()
                 .AddLocalStorageSnappierCompression()
                 .AddSerializerExtensionDescriptor<IJsonSerializer>(".testExtension");
