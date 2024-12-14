@@ -77,7 +77,7 @@ namespace OSK.Storage.Local.Models
         private async ValueTask<byte[]> ReadStreamBytesAsync(CancellationToken cancellationToken)
         {
             using var contentStream = await GetContentAsMemoryStreamAsync(cancellationToken);
-            return await contentStream.ToArrayAsync();
+            return await contentStream.ToArrayAsync(cancellationToken: cancellationToken);
         }
 
         private async ValueTask<MemoryStream> GetContentAsMemoryStreamAsync(CancellationToken cancellationToken)
