@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using OSK.Extensions.Object.DeepEquals;
 using OSK.Extensions.Serialization.SystemTextJson.Polymorphism;
 using OSK.Extensions.Serialization.YamlDotNet.Polymorphism;
+using OSK.Security.Cryptography.Aes.Models;
 using OSK.Serialization.Abstractions.Json;
 using OSK.Serialization.Binary.Sharp;
 using OSK.Serialization.Json.SystemTextJson;
@@ -17,6 +18,7 @@ using OSK.Storage.Local.Options;
 using OSK.Storage.Local.Ports;
 using OSK.Storage.Local.UnitTests.Helpers;
 using OSK.Storage.Local.UnitTests.Helpers.TestFixtures;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Serialization.Metadata;
 using System.Xml.Linq;
@@ -31,6 +33,8 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
 
         FileStorageFixture FileStorageFixture { get; set; }
 
+        private readonly IServiceCollection _services;
+
         #endregion
 
         #region Constructors
@@ -40,6 +44,24 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
             FileStorageFixture = fixture;
             FileStorageFixture.ClearTestDirectory();
             FileStorageFixture.SetEncoding(Encoding.UTF8);
+
+            _services = new ServiceCollection();
+            _services.AddLogging();
+            _services.AddPolymorphismEnumDiscriminatorStrategy();
+            _services.AddBinarySharpSerialization();
+
+            _services
+                .AddYamlDotNetSerialization()
+                .AddYamlDotNetPolymorphism(typeof(TestParentData));
+            _services
+                .AddSystemTextJsonSerialization(o =>
+                {
+                    o.WriteIndented = true;
+                    o.PropertyNameCaseInsensitive = true;
+                    o.TypeInfoResolver = new DefaultJsonTypeInfoResolver();
+                })
+                .AddSystemTextJsonPolymorphism();
+            _services.AddLocalStorage();
         }
 
         #endregion
@@ -53,10 +75,10 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
         public async Task EndToEnd_NoDataProcessors(string fileNameWithExtension)
         {
             // Arrange
-            var storageService = GetStorageService(services =>
-            {
-                services.AddSerializerExtensionDescriptor<IJsonSerializer>(".testExtension");
-            });
+
+            _services.AddSerializerExtensionDescriptor<IJsonSerializer>(".testExtension");
+            var serviceProvider = _services.BuildServiceProvider();
+            var storageService = serviceProvider.GetRequiredService<ILocalStorageService>();
 
             var file = new TestFile()
             {
@@ -93,15 +115,14 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
         public async Task EndToEnd_ExtraDataProcessors(string fileNameWithExtension, bool encryptFile)
         {
             // Arrange
-            var storageService = GetStorageService(services =>
-            {
-                services.TryAddTransient<ICryptographicKeyRepository, TestKeyRepository>();
+            _services.TryAddTransient<ICryptographicKeyRepository, TestKeyRepository>();
+            _services
+                .AddLocalStorageCryptography()
+                .AddLocalStorageSnappierCompression()
+                .AddSerializerExtensionDescriptor<IJsonSerializer>(".testExtension");
 
-                services
-                    .AddLocalStorageCryptography()
-                    .AddLocalStorageSnappierCompression()
-                    .AddSerializerExtensionDescriptor<IJsonSerializer>(".testExtension");
-            });
+            var serviceProivder = _services.BuildServiceProvider();
+            var storageService = serviceProivder.GetRequiredService<ILocalStorageService>();
 
             var file = new TestFile()
             {
@@ -138,41 +159,14 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
             Assert.True(saveOutput.IsSuccessful);
 
             var getOutput = await storageService.GetAsync(testFilePath);
+
             Assert.True(getOutput.IsSuccessful);
-            
+            Assert.Equal(options.Encrypt, getOutput.Value.MetaData.IsEncrypted);
+
             using var o = getOutput.Value;
             var actualTestFile = await o.StreamAsAsync<TestFile>();
 
             Assert.True(testFile.DeepEquals(actualTestFile));
-        }
-
-        private ILocalStorageService GetStorageService(Action<ServiceCollection> extras = null)
-        {
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddLogging();
-            serviceCollection.AddPolymorphismEnumDiscriminatorStrategy();
-            serviceCollection.AddBinarySharpSerialization();
-
-            serviceCollection
-                .AddYamlDotNetSerialization()
-                .AddYamlDotNetPolymorphism(typeof(TestParentData));
-            serviceCollection
-                .AddSystemTextJsonSerialization(o =>
-                {
-                    o.WriteIndented = true;
-                    o.PropertyNameCaseInsensitive = true;
-                    o.TypeInfoResolver = new DefaultJsonTypeInfoResolver();
-                })
-                .AddSystemTextJsonPolymorphism();
-            serviceCollection.AddLocalStorage();
-
-            if (extras != null)
-            {
-                extras(serviceCollection);
-            }
-
-            var provider = serviceCollection.BuildServiceProvider();
-            return provider.GetRequiredService<ILocalStorageService>();
         }
 
         #endregion

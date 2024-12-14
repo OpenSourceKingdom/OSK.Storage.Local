@@ -14,6 +14,7 @@
 		<PackageReference Include="OSK.Extensions.Serialization.SystemTextJson.Polymorphism" Version="1.0.2" />
 		<PackageReference Include="OSK.Extensions.Serialization.YamlDotNet.Polymorphism" Version="1.0.1" />
 		<PackageReference Include="OSK.Functions.Outputs.Mocks" Version="1.5.2" />
+		<PackageReference Include="OSK.Security.Cryptography.Aes" Version="1.1.0" />
 		<PackageReference Include="OSK.Serialization.Binary.Sharp" Version="1.0.1" />
 		<PackageReference Include="OSK.Serialization.Json.SystemTextJson" Version="1.0.1" />
 		<PackageReference Include="OSK.Serialization.Polymorphism.Discriminators" Version="1.0.0" />
