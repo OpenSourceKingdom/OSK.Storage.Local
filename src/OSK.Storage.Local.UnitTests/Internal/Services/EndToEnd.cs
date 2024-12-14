@@ -1,12 +1,17 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using OSK.Extensions.Object.DeepEquals;
 using OSK.Extensions.Serialization.SystemTextJson.Polymorphism;
 using OSK.Extensions.Serialization.YamlDotNet.Polymorphism;
+using OSK.Security.Cryptography;
+using OSK.Security.Cryptography.Aes;
+using OSK.Security.Cryptography.Aes.Models;
 using OSK.Serialization.Abstractions.Json;
 using OSK.Serialization.Binary.Sharp;
 using OSK.Serialization.Json.SystemTextJson;
 using OSK.Serialization.Polymorphism.Discriminators;
 using OSK.Serialization.Yaml.YamlDotNet;
+using OSK.Storage.Abstractions;
 using OSK.Storage.Local.Compression.Snappier;
 using OSK.Storage.Local.Cryptography;
 using OSK.Storage.Local.Cryptography.Ports;
@@ -15,8 +20,10 @@ using OSK.Storage.Local.Options;
 using OSK.Storage.Local.Ports;
 using OSK.Storage.Local.UnitTests.Helpers;
 using OSK.Storage.Local.UnitTests.Helpers.TestFixtures;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json.Serialization.Metadata;
+using System.Xml.Linq;
 using Xunit;
 
 namespace OSK.Storage.Local.UnitTests.Internal.Services
@@ -28,6 +35,8 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
 
         FileStorageFixture FileStorageFixture { get; set; }
 
+        private readonly IServiceCollection _services;
+
         #endregion
 
         #region Constructors
@@ -37,176 +46,16 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
             FileStorageFixture = fixture;
             FileStorageFixture.ClearTestDirectory();
             FileStorageFixture.SetEncoding(Encoding.UTF8);
-        }
 
-        #endregion
+            _services = new ServiceCollection();
+            _services.AddLogging();
+            _services.AddPolymorphismEnumDiscriminatorStrategy();
+            _services.AddBinarySharpSerialization();
 
-        [Fact]
-        public async Task EndToEnd_NoDataProcessors()
-        {
-            // Arrange
-            var storageService = GetStorageService();
-
-            var file = new TestFile()
-            {
-                Date = DateTime.Now,
-                Name = "file",
-                Data = new List<TestParentData>()
-                {
-                    new TestChildData()
-                    {
-                        A = 1,
-                        B = "2",
-                        Child = new TestChildData()
-                    }
-                }
-            };
-
-            // Act/Assert
-            var result1 = await storageService.SaveAsync(file, FileStorageFixture.GetFilePath("test.json"), new LocalSaveOptions()
-            {
-                SavePermissions = SavePermissionType.AllowOverwrite
-            });
-            Assert.True(result1.IsSuccessful);
-
-            var result2 = await storageService.SaveAsync(file, FileStorageFixture.GetFilePath("test.yaml"), new LocalSaveOptions()
-            {
-                SavePermissions = SavePermissionType.AllowOverwrite
-            });
-            Assert.True(result2.IsSuccessful);
-
-            var result3 = await storageService.SaveAsync(file, FileStorageFixture.GetFilePath("test.bin"), new LocalSaveOptions()
-            {
-                SavePermissions = SavePermissionType.AllowOverwrite
-            });
-            Assert.True(result3.IsSuccessful);
-
-            var result4 = await storageService.SaveAsync(file, FileStorageFixture.GetFilePath("test"), new LocalSaveOptions()
-            {
-                SavePermissions = SavePermissionType.AllowOverwrite
-            });
-            Assert.True(result4.IsSuccessful);
-
-            var jsonResult = await storageService.GetAsync(FileStorageFixture.GetFilePath("test.json"));
-            Assert.True(jsonResult.IsSuccessful);
-            using var o = jsonResult.Value;
-            _ = await o.StreamAsAsync<TestFile>();
-
-            var yamlResult = await storageService.GetAsync(FileStorageFixture.GetFilePath("test.yaml"));
-            Assert.True(yamlResult.IsSuccessful);
-            using var o1 = yamlResult.Value;
-            _ = await o1.StreamAsAsync<TestFile>();
-
-            var binaryResult = await storageService.GetAsync(FileStorageFixture.GetFilePath("test.bin"));
-            Assert.True(binaryResult.IsSuccessful);
-            using var o2 = binaryResult.Value;
-            _ = await o2.StreamAsAsync<TestFile>();
-
-            var unknownResult = await storageService.GetAsync(FileStorageFixture.GetFilePath("test"));
-            Assert.True(unknownResult.IsSuccessful);
-            using var o3 = unknownResult.Value;
-            _ = await o3.StreamAsAsync<TestFile>();
-        }
-
-        [Fact]
-        public async Task EndToEnd_ExtraDataProcessors()
-        {
-            // Arrange
-            var storageService = GetStorageService(services =>
-            {
-                services.TryAddTransient<ICryptographicKeyRepository, TestKeyRepository>();
-
-                services
-                    .AddLocalStorageCryptography()
-                    .AddLocalStorageSnappierCompression()
-                    .AddSerializerExtensionDescriptor<IJsonSerializer>(".testExtension");
-            });
-
-            var file = new TestFile()
-            {
-                Date = DateTime.Now,
-                Name = "file",
-                Data = new List<TestParentData>()
-                {
-                    new TestChildData()
-                    {
-                        A = 1,
-                        B = "2",
-                        Child = new TestChildData()
-                    }
-                }
-            };
-
-            // Act/Assert
-            var result1 = await storageService.SaveAsync(file, FileStorageFixture.GetFilePath("test.json"), new LocalSaveOptions()
-            {
-                SavePermissions = SavePermissionType.AllowOverwrite
-            });
-            Assert.True(result1.IsSuccessful);
-
-            var result2 = await storageService.SaveAsync(file, FileStorageFixture.GetFilePath("test.yaml"), new LocalSaveOptions()
-            {
-                SavePermissions = SavePermissionType.AllowOverwrite
-            });
-            Assert.True(result2.IsSuccessful);
-
-            var result3 = await storageService.SaveAsync(file, FileStorageFixture.GetFilePath("test.bin"), new LocalSaveOptions()
-            {
-                SavePermissions = SavePermissionType.AllowOverwrite
-            });
-            Assert.True(result3.IsSuccessful);
-
-            var result4 = await storageService.SaveAsync(file, FileStorageFixture.GetFilePath("test"), new LocalSaveOptions()
-            {
-                SavePermissions = SavePermissionType.AllowOverwrite
-            });
-            Assert.True(result4.IsSuccessful);
-
-            var result5 = await storageService.SaveAsync(file, FileStorageFixture.GetFilePath("test.testExtension"), new LocalSaveOptions()
-            {
-                SavePermissions = SavePermissionType.AllowOverwrite
-            });
-            Assert.True(result5.IsSuccessful);
-
-            var jsonResult = await storageService.GetAsync(FileStorageFixture.GetFilePath("test.json"));
-            Assert.True(jsonResult.IsSuccessful);
-            using var o = jsonResult.Value;
-            _ = await o.StreamAsAsync<TestFile>();
-
-            var yamlResult = await storageService.GetAsync(FileStorageFixture.GetFilePath("test.yaml"));
-            Assert.True(yamlResult.IsSuccessful);
-            using var o1 = yamlResult.Value;
-            _ = await o1.StreamAsAsync<TestFile>();
-
-            var binaryResult = await storageService.GetAsync(FileStorageFixture.GetFilePath("test.bin"));
-            Assert.True(binaryResult.IsSuccessful);
-            using var o2 = binaryResult.Value;
-            _ = await o2.StreamAsAsync<TestFile>();
-
-            var unknownResult = await storageService.GetAsync(FileStorageFixture.GetFilePath("test"));
-            Assert.True(unknownResult.IsSuccessful);
-            using var o3 = unknownResult.Value;
-            _ = await o3.StreamAsAsync<TestFile>();
-
-            var customResult = await storageService.GetAsync(FileStorageFixture.GetFilePath("test.testExtension"));
-            Assert.True(customResult.IsSuccessful);
-            using var o4 = customResult.Value;
-            _ = await o4.StreamAsAsync<TestFile>();
-        }
-
-        #region Helpers
-
-        private ILocalStorageService GetStorageService(Action<ServiceCollection> extras = null)
-        {
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddLogging();
-            serviceCollection.AddPolymorphismEnumDiscriminatorStrategy();
-            serviceCollection.AddBinarySharpSerialization();
-
-            serviceCollection
+            _services
                 .AddYamlDotNetSerialization()
                 .AddYamlDotNetPolymorphism(typeof(TestParentData));
-            serviceCollection
+            _services
                 .AddSystemTextJsonSerialization(o =>
                 {
                     o.WriteIndented = true;
@@ -214,15 +63,113 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
                     o.TypeInfoResolver = new DefaultJsonTypeInfoResolver();
                 })
                 .AddSystemTextJsonPolymorphism();
-            serviceCollection.AddLocalStorage();
+            _services.AddLocalStorage();
+        }
 
-            if (extras != null)
+        #endregion
+
+        [Theory]
+        [InlineData("test.json")]
+        [InlineData("test.yaml")]
+        [InlineData("test.bin")]
+        [InlineData("test")]
+        [InlineData("test.testExtension")]
+        public async Task EndToEnd_NoDataProcessors(string fileNameWithExtension)
+        {
+            // Arrange
+
+            _services.AddSerializerExtensionDescriptor<IJsonSerializer>(".testExtension");
+            var serviceProvider = _services.BuildServiceProvider();
+            var storageService = serviceProvider.GetRequiredService<ILocalStorageService>();
+
+            var file = new TestFile()
             {
-                extras(serviceCollection);
-            }
+                Date = DateTime.Now,
+                Name = "file",
+                Data = new List<TestParentData>()
+                {
+                    new TestChildData()
+                    {
+                        A = 1,
+                        B = "2",
+                        Child = new TestChildData()
+                    }
+                }
+            };
 
-            var provider = serviceCollection.BuildServiceProvider();
-            return provider.GetRequiredService<ILocalStorageService>();
+            var saveOptions = new LocalSaveOptions()
+            {
+                SavePermissions = SavePermissionType.AllowOverwrite,
+                Encrypt = false
+            };
+
+            // Act/Assert
+            await AssertUseCaseEndToEndAsync(storageService, file, fileNameWithExtension, saveOptions);
+        }
+
+        [Theory]
+        [InlineData("test.json", false)]
+        [InlineData("test.yaml", false)]
+        [InlineData("test.bin", false)]
+        [InlineData("test", false)]
+        [InlineData("test.testExtension", false)]
+        [InlineData("encrypted.json", true)]
+        public async Task EndToEnd_ExtraDataProcessors(string fileNameWithExtension, bool encryptFile)
+        {
+            // Arrange
+            _services.TryAddTransient<ICryptographicKeyRepository, TestKeyRepository>();
+            _services
+                .AddLocalStorageCryptography()
+                    .AddAesKeyService()
+                .AddLocalStorageSnappierCompression()
+                .AddSerializerExtensionDescriptor<IJsonSerializer>(".testExtension");
+
+            var serviceProivder = _services.BuildServiceProvider();
+            var storageService = serviceProivder.GetRequiredService<ILocalStorageService>();
+
+            var file = new TestFile()
+            {
+                Date = DateTime.Now,
+                Name = "file",
+                Data = new List<TestParentData>()
+                {
+                    new TestChildData()
+                    {
+                        A = 1,
+                        B = "2",
+                        Child = new TestChildData()
+                    }
+                }
+            };
+
+            var saveOptions = new LocalSaveOptions()
+            {
+                SavePermissions = SavePermissionType.AllowOverwrite,
+                Encrypt = encryptFile
+            };
+
+            // Act/Assert
+            await AssertUseCaseEndToEndAsync(storageService, file, fileNameWithExtension, saveOptions);
+        }
+
+        #region Helpers
+
+        private async Task AssertUseCaseEndToEndAsync(ILocalStorageService storageService, TestFile testFile, 
+            string fileNameWithExtension, LocalSaveOptions options)
+        {
+            var testFilePath = FileStorageFixture.GetFilePath(fileNameWithExtension);
+            var saveOutput = await storageService.SaveAsync(testFile, testFilePath, options);
+            Assert.True(saveOutput.IsSuccessful);
+
+            var getOutput = await storageService.GetAsync(testFilePath);
+
+            Assert.True(getOutput.IsSuccessful);
+            Assert.Equal(options.Encrypt, getOutput.Value.MetaData.IsEncrypted);
+
+            using var o = getOutput.Value;
+            var actualTestFile = await o.StreamAsAsync<TestFile>();
+
+            Assert.True(testFile.DeepEquals(actualTestFile));
         }
 
         #endregion

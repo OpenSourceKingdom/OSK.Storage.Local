@@ -8,9 +8,11 @@ namespace OSK.Storage.Local.UnitTests.Helpers
     {
         private static readonly AesKeyInformation KeyInformation = AesKeyInformation.New(128);
 
+        internal AesKeyInformation CustomKeyInformation { get; set; }
+
         public ValueTask<ICryptographicKeyInformation> GetCryptographicKeyAsync(CancellationToken cancellationToken = default)
         {
-            return new ValueTask<ICryptographicKeyInformation>(KeyInformation);
+            return new ValueTask<ICryptographicKeyInformation>(CustomKeyInformation ?? KeyInformation);
         }
     }
 }

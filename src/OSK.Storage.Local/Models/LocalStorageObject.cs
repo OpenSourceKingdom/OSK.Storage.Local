@@ -76,17 +76,25 @@ namespace OSK.Storage.Local.Models
 
         private async ValueTask<byte[]> ReadStreamBytesAsync(CancellationToken cancellationToken)
         {
+            using var contentStream = await GetContentAsMemoryStreamAsync(cancellationToken);
+            return await contentStream.ToArrayAsync(cancellationToken: cancellationToken);
+        }
+
+        private async ValueTask<MemoryStream> GetContentAsMemoryStreamAsync(CancellationToken cancellationToken)
+        {
             if (Value is MemoryStream memoryStream)
             {
-                return memoryStream.ToArray();
+                return memoryStream;
             }
 
-            using var copyStream = new MemoryStream();
-            await Value.CopyToAsync(copyStream, cancellationToken);
+            var contentStream = new MemoryStream();
+            await Value.CopyToAsync(contentStream, cancellationToken);
             await Value.FlushAsync(cancellationToken);
-            var array = copyStream.ToArray();
+            contentStream.Position = 0;
+
             Value.Dispose();
-            return array;
+
+            return contentStream;
         }
 
         #endregion

@@ -25,7 +25,7 @@ This project provides an integration to the `ILocalStorageService` to using this
 # Cryptography
 For security needs, a cryptography integration exists that utilizes the `OSK.Security.Cryptography` codebase. By using the `AddLocalStorageCryptography` extension, the `ILocalStorageService` will gain access to a cryptographic data processor that handle encryption and decryption of data, using any of the
 integrations for the cryptoraphic library. In order to fully utilize this extension, consumers will need to create an implementation for the `ICryptographicKeyRepository` and add it to the dependency container. This is used to retrieve the necessary key information
-for the application to encrypt local data.
+for the application to encrypt local data. Additionally, consumers should also add an implementation of a cryptographic algorithm so that it can be used for encryption/decryption
 
 # Default Local Configuration
 For consumers simply wanting access to a local storage service capable of handling binary, json, and yaml, without wanting to perform custom dependency setups, this project provides a quick convenience method to add
