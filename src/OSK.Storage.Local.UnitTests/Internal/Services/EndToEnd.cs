@@ -3,6 +3,8 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using OSK.Extensions.Object.DeepEquals;
 using OSK.Extensions.Serialization.SystemTextJson.Polymorphism;
 using OSK.Extensions.Serialization.YamlDotNet.Polymorphism;
+using OSK.Security.Cryptography;
+using OSK.Security.Cryptography.Aes;
 using OSK.Security.Cryptography.Aes.Models;
 using OSK.Serialization.Abstractions.Json;
 using OSK.Serialization.Binary.Sharp;
@@ -117,7 +119,9 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
             // Arrange
             _services.TryAddTransient<ICryptographicKeyRepository, TestKeyRepository>();
             _services
-                .AddLocalStorageCryptography()
+                .AddCryptography()
+                    .AddLocalStorageCryptography()
+                    .AddAesKeyService()
                 .AddLocalStorageSnappierCompression()
                 .AddSerializerExtensionDescriptor<IJsonSerializer>(".testExtension");
 
