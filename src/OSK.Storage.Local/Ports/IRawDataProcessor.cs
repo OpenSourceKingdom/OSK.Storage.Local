@@ -11,7 +11,7 @@ namespace OSK.Storage.Local.Ports
     /// This provides methods for serialization and deserialization to ensure that any processing for storage can be reversed if necessary so the raw data can be 
     /// successfully converted back into an object
     /// </summary>
-    [HexagonalPort(HexagonalPort.Secondary)]
+    [HexagonalIntegration(HexagonalIntegrationType.IntegrationOptional)]
     public interface IRawDataProcessor
     {
         /// <summary>

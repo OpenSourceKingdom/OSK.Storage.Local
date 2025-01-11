@@ -30,13 +30,13 @@ namespace OSK.Storage.Local.Compression.Snappier.Internal.Services
         public ValueTask<IOutput<byte[]>> ProcessPostSerializationAsync(byte[] data,
             CancellationToken cancellationToken = default)
         {
-            return new ValueTask<IOutput<byte[]>>(_outputFactory.Success(Snappy.CompressToArray(data)));
+            return new ValueTask<IOutput<byte[]>>(_outputFactory.Succeed(Snappy.CompressToArray(data)));
         }
 
         public ValueTask<IOutput<byte[]>> ProcessPreDeserializationAsync(byte[] data, 
             CancellationToken cancellationToken = default)
         {
-            return new ValueTask<IOutput<byte[]>>(_outputFactory.Success(Snappy.DecompressToArray(data)));
+            return new ValueTask<IOutput<byte[]>>(_outputFactory.Succeed(Snappy.DecompressToArray(data)));
         }
 
         #endregion

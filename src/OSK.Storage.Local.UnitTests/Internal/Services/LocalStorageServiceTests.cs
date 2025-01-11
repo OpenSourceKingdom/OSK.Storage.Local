@@ -25,7 +25,7 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
         
         private readonly IOutputFactory<LocalStorageService> _mockOutputFactory;
 
-        private readonly ILocalStorageService _localStorageService;
+        private readonly LocalStorageService _localStorageService;
         private readonly FileStorageFixture _fileStorageFixture;
 
         #endregion
@@ -50,7 +50,7 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
             mockServiceProvider.Setup(m => m.GetService(It.Is<Type>(t => t == typeof(ISerializerProvider))))
                 .Returns(mockSerializerProvider.Object);
 
-            _dataProcessors = new List<IRawDataProcessor>();
+            _dataProcessors = [];
 
             _localStorageService = new LocalStorageService(
                 _dataProcessors, mockSerializerProvider.Object,
@@ -139,7 +139,7 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
             var mockCryptographicDataProcessor = new Mock<ICryptographicRawDataProcessor>();
             mockCryptographicDataProcessor.Setup(m => m.ProcessPostSerializationAsync(It.IsAny<byte[]>(),
                 It.IsAny<CancellationToken>()))
-                .ReturnsAsync(_mockOutputFactory.BadRequest<byte[]>("A bad day!"));
+                .ReturnsAsync(_mockOutputFactory.Fail<byte[]>("A bad day!", OutputSpecificityCode.InvalidParameter));
             _dataProcessors.Add(mockCryptographicDataProcessor.Object);
 
             var text = "Test Text";
@@ -168,7 +168,7 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
             var mockCryptographicDataProcessor = new Mock<ICryptographicRawDataProcessor>();
             mockCryptographicDataProcessor.Setup(m => m.ProcessPostSerializationAsync(It.IsAny<byte[]>(),
                 It.IsAny<CancellationToken>()))
-                .ReturnsAsync(_mockOutputFactory.BadRequest<byte[]>("A bad day!"));
+                .ReturnsAsync(_mockOutputFactory.Fail<byte[]>("A bad day!", OutputSpecificityCode.InvalidParameter));
             _dataProcessors.Add(mockCryptographicDataProcessor.Object);
 
             var text = "Test Text";
@@ -266,7 +266,7 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
             var mockCryptographicDataProcessor = new Mock<ICryptographicRawDataProcessor>();
             mockCryptographicDataProcessor.Setup(m => m.ProcessPostSerializationAsync(It.IsAny<byte[]>(),
             It.IsAny<CancellationToken>()))
-                .ReturnsAsync((byte[] data, CancellationToken _) => _mockOutputFactory.Success(data));
+                .ReturnsAsync((byte[] data, CancellationToken _) => _mockOutputFactory.Succeed(data));
             _dataProcessors.Add(mockCryptographicDataProcessor.Object);
 
             var text = "Test Text";
@@ -339,10 +339,10 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
             var mockCryptographicDataProcessor = new Mock<ICryptographicRawDataProcessor>();
             mockCryptographicDataProcessor.Setup(m => m.ProcessPostSerializationAsync(It.IsAny<byte[]>(),
                 It.IsAny<CancellationToken>()))
-                .ReturnsAsync(_mockOutputFactory.Success(encryptedTestBytes));
+                .ReturnsAsync(_mockOutputFactory.Succeed(encryptedTestBytes));
             mockCryptographicDataProcessor.Setup(m => m.ProcessPreDeserializationAsync(It.IsAny<byte[]>(),
                 It.IsAny<CancellationToken>()))
-                .ReturnsAsync(_mockOutputFactory.BadRequest<byte[]>("A bad day!"));
+                .ReturnsAsync(_mockOutputFactory.Fail<byte[]>("A bad day!", OutputSpecificityCode.InvalidParameter));
             _dataProcessors.Add(mockCryptographicDataProcessor.Object);
 
             // Act
@@ -449,10 +449,10 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
             var mockCryptographicDataProcessor = new Mock<ICryptographicRawDataProcessor>();
             mockCryptographicDataProcessor.Setup(m => m.ProcessPostSerializationAsync(It.IsAny<byte[]>(),
                 It.IsAny<CancellationToken>()))
-                .ReturnsAsync((byte[] bytes, CancellationToken _) => _mockOutputFactory.Success(bytes));
+                .ReturnsAsync((byte[] bytes, CancellationToken _) => _mockOutputFactory.Succeed(bytes));
             mockCryptographicDataProcessor.Setup(m => m.ProcessPreDeserializationAsync(It.IsAny<byte[]>(),
                 It.IsAny<CancellationToken>()))
-                .ReturnsAsync((byte[] bytes, CancellationToken _) => _mockOutputFactory.Success(bytes));
+                .ReturnsAsync((byte[] bytes, CancellationToken _) => _mockOutputFactory.Succeed(bytes));
             _dataProcessors.Add(mockCryptographicDataProcessor.Object);
 
             var encryptedFileName = "encryptedTestFile";
@@ -504,10 +504,10 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
             var mockCryptographicDataProcessor = new Mock<ICryptographicRawDataProcessor>();
             mockCryptographicDataProcessor.Setup(m => m.ProcessPostSerializationAsync(It.IsAny<byte[]>(),
                 It.IsAny<CancellationToken>()))
-                .ReturnsAsync((byte[] bytes, CancellationToken _) => _mockOutputFactory.Success(bytes));
+                .ReturnsAsync((byte[] bytes, CancellationToken _) => _mockOutputFactory.Succeed(bytes));
             mockCryptographicDataProcessor.Setup(m => m.ProcessPreDeserializationAsync(It.IsAny<byte[]>(),
                 It.IsAny<CancellationToken>()))
-                .ReturnsAsync((byte[] bytes, CancellationToken _) => _mockOutputFactory.Success(bytes));
+                .ReturnsAsync((byte[] bytes, CancellationToken _) => _mockOutputFactory.Succeed(bytes));
             _dataProcessors.Add(mockCryptographicDataProcessor.Object);
 
             var encryptedFileName = "encryptedTestFile";
@@ -582,8 +582,8 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
             {
                 Name = "Hello",
                 Date = DateTime.UtcNow,
-                Data = new List<TestParentData>()
-                {
+                Data =
+                [
                     new TestChildData()
                     {
                         A = 1,
@@ -600,7 +600,7 @@ namespace OSK.Storage.Local.UnitTests.Internal.Services
                             B = "The Answers Are In"
                         }
                     }
-                }
+                ]
             };
 
             var path = _fileStorageFixture.GetFilePath("data.persisted");

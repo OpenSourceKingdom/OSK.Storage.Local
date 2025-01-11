@@ -13,15 +13,15 @@
 		<PackageReference Include="OSK.Extensions.Object.DeepEquals" Version="1.1.0" />
 		<PackageReference Include="OSK.Extensions.Serialization.SystemTextJson.Polymorphism" Version="1.0.2" />
 		<PackageReference Include="OSK.Extensions.Serialization.YamlDotNet.Polymorphism" Version="1.0.1" />
-		<PackageReference Include="OSK.Functions.Outputs.Mocks" Version="1.5.2" />
+		<PackageReference Include="OSK.Functions.Outputs.Mocks" Version="2.1.1" />
 		<PackageReference Include="OSK.Security.Cryptography.Aes" Version="1.1.0" />
 		<PackageReference Include="OSK.Serialization.Binary.Sharp" Version="1.0.1" />
 		<PackageReference Include="OSK.Serialization.Json.SystemTextJson" Version="1.0.1" />
 		<PackageReference Include="OSK.Serialization.Polymorphism.Discriminators" Version="1.0.0" />
 		<PackageReference Include="OSK.Serialization.Yaml.YamlDotNet" Version="1.0.2" />
-		<PackageReference Include="xunit" Version="2.9.2" />
+		<PackageReference Include="xunit" Version="2.9.3" />
 		<PackageReference Include="Moq" Version="4.20.72" />
-		<PackageReference Include="xunit.runner.visualstudio" Version="2.8.2">
+		<PackageReference Include="xunit.runner.visualstudio" Version="3.0.1">
 			<PrivateAssets>all</PrivateAssets>
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
 		</PackageReference>

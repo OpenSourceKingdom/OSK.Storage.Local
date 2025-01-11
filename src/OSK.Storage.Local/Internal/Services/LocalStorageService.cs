@@ -66,9 +66,9 @@ namespace OSK.Storage.Local.Internal.Services
             }
             if (options.SavePermissions == SavePermissionType.NoOverwrite && File.Exists(fullFilePath))
             {
-                return _outputFactory.BadRequest<StorageMetaData>(
+                return _outputFactory.Fail<StorageMetaData>(
                     $"A file already exists at the given path, {fullFilePath}, and overwriting was not allowed. To overwrite an existing file, use {SavePermissionType.AllowOverwrite}.",
-                    Constants.LibraryName);
+                    OutputSpecificityCode.InvalidParameter, Constants.LibraryName);
             }
             if (options.Encrypt && !_dataProcessors.Any(processor => processor is ICryptographicRawDataProcessor))
             {
@@ -96,7 +96,7 @@ namespace OSK.Storage.Local.Internal.Services
                     var dataResult = await dataProcessor.ProcessPostSerializationAsync(serializedData, cancellationToken);
                     if (!dataResult.IsSuccessful)
                     {
-                        return dataResult.AsType<StorageMetaData>();
+                        return dataResult.AsOutput<StorageMetaData>();
                     }
 
                     serializedData = dataResult.Value;
@@ -109,7 +109,7 @@ namespace OSK.Storage.Local.Internal.Services
                 return _outputFactory.Exception<StorageMetaData>(ex, Constants.LibraryName);
             }
 
-            return _outputFactory.Success(new StorageMetaData(fullFilePath, serializedData.LongLength,
+            return _outputFactory.Succeed(new StorageMetaData(fullFilePath, serializedData.LongLength,
                 options.Encrypt, GetMimeType(fullFilePath), 
                 File.GetLastWriteTimeUtc(fullFilePath)));
         }
@@ -122,16 +122,16 @@ namespace OSK.Storage.Local.Internal.Services
             }
             if (!File.Exists(fullFilePath))
             {
-                return _outputFactory.NotFound<StorageObject>($"The following file {fullFilePath} did not exist.");
+                return _outputFactory.Fail<StorageObject>($"The following file {fullFilePath} did not exist.", OutputSpecificityCode.DataNotFound);
             }
 
             var getLocalObjectResult = await GetLocalStorageObjectAsync(fullFilePath, keepStreamOpen: true, cancellationToken);
             if (!getLocalObjectResult.IsSuccessful)
             {
-                return getLocalObjectResult.AsType<StorageObject>();
+                return getLocalObjectResult.AsOutput<StorageObject>();
             }
 
-            return _outputFactory.Success((StorageObject)new LocalStorageObject(
+            return _outputFactory.Succeed((StorageObject)new LocalStorageObject(
                 getLocalObjectResult.Value.DataStream,
                 new StorageMetaData(
                     fullFilePath, getLocalObjectResult.Value.Size, getLocalObjectResult.Value.IsEncrypted, 
@@ -149,8 +149,8 @@ namespace OSK.Storage.Local.Internal.Services
 
             if (!Directory.Exists(directoryPath))
             {
-                return _outputFactory.NotFound<IEnumerable<StorageMetaData>>(
-                    $"The path {directoryPath} does not exist.");
+                return _outputFactory.Fail<IEnumerable<StorageMetaData>>(
+                    $"The path {directoryPath} does not exist.", OutputSpecificityCode.DataNotFound);
             }
 
             var searchExtension = searchOptions == null || string.IsNullOrWhiteSpace(searchOptions.Extension)
@@ -168,7 +168,7 @@ namespace OSK.Storage.Local.Internal.Services
                 var getLocalObjectResult = await GetLocalStorageObjectAsync(filePath, keepStreamOpen: false, cancellationToken);
                 if (!getLocalObjectResult.IsSuccessful)
                 {
-                    return getLocalObjectResult.AsType<IEnumerable<StorageMetaData>>();
+                    return getLocalObjectResult.AsOutput<IEnumerable<StorageMetaData>>();
                 }
                 
                 storageDetails.Add(new StorageMetaData(
@@ -178,19 +178,19 @@ namespace OSK.Storage.Local.Internal.Services
                 getLocalObjectResult.Value.Dispose();
             }
 
-            return _outputFactory.Success((IEnumerable<StorageMetaData>)storageDetails);
+            return _outputFactory.Succeed((IEnumerable<StorageMetaData>)storageDetails);
         }
 
         public Task<IOutput> DeleteAsync(string filePath, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
             {
-                return Task.FromResult(_outputFactory.Success());
+                return Task.FromResult(_outputFactory.Succeed());
             }
 
             File.Delete(filePath);
 
-            return Task.FromResult(_outputFactory.Success());
+            return Task.FromResult(_outputFactory.Succeed());
         }
 
         #endregion
@@ -244,7 +244,7 @@ namespace OSK.Storage.Local.Internal.Services
                 await fileStream.DisposeAsync();
             }
 
-            return _outputFactory.Success(new LocalStorageFile()
+            return _outputFactory.Succeed(new LocalStorageFile()
             {
                 IsEncrypted = isEncrypted || File.GetAttributes(filePath).HasFlag(FileAttributes.Encrypted),
                 Size = dataSize,

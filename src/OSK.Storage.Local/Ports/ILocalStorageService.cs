@@ -4,7 +4,7 @@ using OSK.Storage.Local.Options;
 
 namespace OSK.Storage.Local.Ports
 {
-    [HexagonalPort(HexagonalPort.Primary)]
+    [HexagonalIntegration(HexagonalIntegrationType.LibraryProvided, HexagonalIntegrationType.ConsumerPointOfEntry)]
     public interface ILocalStorageService : IStorageService<LocalSaveOptions, FileSearchOptions>
     {
     }

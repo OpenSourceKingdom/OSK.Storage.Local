@@ -38,14 +38,14 @@ namespace OSK.Storage.Local.Cryptography.Internal.Services
         {
             var keyService = await GetKeyService(cancellationToken);
             var encryptedData = await keyService.EncryptAsync(data, cancellationToken);
-            return _outputFactory.Success(encryptedData);
+            return _outputFactory.Succeed(encryptedData);
         }
 
         public async ValueTask<IOutput<byte[]>> ProcessPreDeserializationAsync(byte[] data, CancellationToken cancellationToken = default)
         {
             var keyService = await GetKeyService(cancellationToken);
             var decryptedData = await keyService.DecryptAsync(data, cancellationToken);
-            return _outputFactory.Success(decryptedData);
+            return _outputFactory.Succeed(decryptedData);
         }
 
         #endregion
