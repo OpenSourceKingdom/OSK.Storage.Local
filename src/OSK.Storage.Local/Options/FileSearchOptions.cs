@@ -1,7 +1,6 @@
-﻿namespace OSK.Storage.Local.Options
+﻿namespace OSK.Storage.Local.Options;
+
+public class FileSearchOptions
 {
-    public class FileSearchOptions
-    {
-        public string Extension { get; set; }
-    }
+    public string Extension { get; set; }
 }

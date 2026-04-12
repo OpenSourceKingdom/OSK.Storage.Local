@@ -1,8 +1,7 @@
-﻿namespace OSK.Storage.Local.Models
+﻿namespace OSK.Storage.Local.Models;
+
+public enum SavePermissionType
 {
-    public enum SavePermissionType
-    {
-        NoOverwrite = 0,
-        AllowOverwrite = 1
-    }
+    NoOverwrite = 0,
+    AllowOverwrite = 1
 }

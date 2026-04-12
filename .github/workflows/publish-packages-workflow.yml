@@ -17,9 +17,9 @@ jobs:
       - name: Get the version
         id: get_version
         run: echo "PACKAGE_VERSION=${GITHUB_REF/refs\/tags\//}" >> "$GITHUB_OUTPUT" 
-      - uses: actions/setup-dotnet@v4.0.0
+      - uses: actions/setup-dotnet@v5.0.1
         with:
-          dotnet-version: '8.0.x' # SDK Version to use.
+          dotnet-version: 10.x
         env:
           NUGET_AUTH_TOKEN: ${{ secrets.NUGET_TOKEN }}
       - run: dotnet build --configuration Release ./src /p:Version=${{ steps.get_version.outputs.PACKAGE_VERSION }}

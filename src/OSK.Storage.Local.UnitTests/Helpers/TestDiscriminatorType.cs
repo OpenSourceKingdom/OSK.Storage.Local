@@ -1,7 +1,6 @@
-﻿namespace OSK.Storage.Local.UnitTests.Helpers
+﻿namespace OSK.Storage.Local.UnitTests.Helpers;
+
+public enum TestDiscriminatorType
 {
-    public enum TestDiscriminatorType
-    {
-        TestChildData
-    }
+    TestChildData
 }

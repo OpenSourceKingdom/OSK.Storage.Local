@@ -1,0 +1,6 @@
+- name: Documentation
+  href: docs/
+- name: Codebase
+  href: codebase/
+- name: GitHub
+  href: https://github.com/OpenSourceKingdom/OSK.Storage.Local
