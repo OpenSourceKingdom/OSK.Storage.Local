@@ -1,4 +1,4 @@
-﻿using OSK.Functions.Outputs.Models;
+﻿using OSK.Operations.Outputs.Models;
 using OSK.Hexagonal.MetaData;
 using OSK.Serialization.Abstractions;
 using System.Threading;

@@ -1,4 +1,4 @@
-﻿using OSK.Functions.Outputs.Models;
+﻿using OSK.Operations.Outputs.Models;
 using OSK.Storage.Abstractions;
 using OSK.Storage.Local.Options;
 using OSK.Storage.Local.Ports;
