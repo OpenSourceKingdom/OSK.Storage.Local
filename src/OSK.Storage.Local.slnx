@@ -1,0 +1,8 @@
+<Solution>
+  <Project Path="OSK.Storage.Local.Compression.Snappier/OSK.Storage.Local.Compression.Snappier.csproj" />
+  <Project Path="OSK.Storage.Local.Cryptography/OSK.Storage.Local.Cryptography.csproj" />
+  <Project Path="OSK.Storage.Local.DefaultConfiguration.Polymorphism/OSK.Storage.Local.DefaultConfiguration.Polymorphism.csproj" />
+  <Project Path="OSK.Storage.Local.DefaultConfiguration/OSK.Storage.Local.DefaultConfiguration.csproj" />
+  <Project Path="OSK.Storage.Local.UnitTests/OSK.Storage.Local.UnitTests.csproj" />
+  <Project Path="OSK.Storage.Local/OSK.Storage.Local.csproj" />
+</Solution>

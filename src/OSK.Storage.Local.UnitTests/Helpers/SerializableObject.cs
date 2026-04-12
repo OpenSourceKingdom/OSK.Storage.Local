@@ -1,12 +1,11 @@
-﻿namespace OSK.Storage.Local.UnitTests.Helpers
+﻿namespace OSK.Storage.Local.UnitTests.Helpers;
+
+[Serializable]
+public class SerializableObject
 {
-    [Serializable]
-    public class SerializableObject
-    {
-        public string TestPropertyA { get; set; }
+    public string TestPropertyA { get; set; }
 
-        public int TestPropertyB { get; set; }
+    public int TestPropertyB { get; set; }
 
-        public SerializableObject TestPropertyC { get; set; }
-    }
+    public SerializableObject TestPropertyC { get; set; }
 }

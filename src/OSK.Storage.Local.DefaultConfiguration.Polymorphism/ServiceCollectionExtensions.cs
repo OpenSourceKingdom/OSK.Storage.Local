@@ -4,19 +4,18 @@ using OSK.Extensions.Serialization.YamlDotNet.Polymorphism;
 using OSK.Serialization.Polymorphism.Discriminators;
 using System;
 
-namespace OSK.Storage.Local.DefaultConfiguration.Polymorphism
-{
-    public static class ServiceCollectionExtensions
-    {
-        public static IServiceCollection AddLocalStorageDefaultPolymorphism(this IServiceCollection services,
-            Type assemblyMarkerType)
-        {
-            services
-                .AddPolymorphismEnumDiscriminatorStrategy()
-                .AddYamlDotNetPolymorphism(assemblyMarkerType)
-                .AddSystemTextJsonPolymorphism();
+namespace OSK.Storage.Local.DefaultConfiguration.Polymorphism;
 
-            return services;
-        }
+public static class ServiceCollectionExtensions
+{
+    public static IServiceCollection AddLocalStorageDefaultPolymorphism(this IServiceCollection services,
+        Type assemblyMarkerType)
+    {
+        services
+            .AddPolymorphismEnumDiscriminatorStrategy()
+            .AddYamlDotNetPolymorphism(assemblyMarkerType)
+            .AddSystemTextJsonPolymorphism();
+
+        return services;
     }
 }

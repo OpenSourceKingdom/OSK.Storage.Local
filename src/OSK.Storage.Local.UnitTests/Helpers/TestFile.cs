@@ -1,11 +1,10 @@
-﻿namespace OSK.Storage.Local.UnitTests.Helpers
+﻿namespace OSK.Storage.Local.UnitTests.Helpers;
+
+public class TestFile
 {
-    public class TestFile
-    {
-        public string Name { get; set; }
+    public string Name { get; set; }
 
-        public DateTime Date { get; set; }
+    public DateTime Date { get; set; }
 
-        public IEnumerable<TestParentData> Data { get; set; }
-    }
+    public IEnumerable<TestParentData> Data { get; set; }
 }

@@ -10,45 +10,44 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace OSK.Storage.Local.Internal.Services
+namespace OSK.Storage.Local.Internal.Services;
+
+internal class SerializerProvider : ISerializerProvider
 {
-    internal class SerializerProvider : ISerializerProvider
+    #region Variables
+
+    private readonly IServiceProvider _serviceProvider;
+    private readonly IEnumerable<SerializerExtensionDescriptor> _extensionDescriptors;
+
+    #endregion
+
+    #region Constructors
+
+    public SerializerProvider(IEnumerable<SerializerExtensionDescriptor> extensionDescriptors, IServiceProvider serviceProvider)
     {
-        #region Variables
-
-        private readonly IServiceProvider _serviceProvider;
-        private readonly IEnumerable<SerializerExtensionDescriptor> _extensionDescriptors;
-
-        #endregion
-
-        #region Constructors
-
-        public SerializerProvider(IEnumerable<SerializerExtensionDescriptor> extensionDescriptors, IServiceProvider serviceProvider)
-        {
-            _extensionDescriptors = extensionDescriptors ?? throw new ArgumentNullException(nameof(extensionDescriptors));
-            _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
-        }
-
-        #endregion
-
-        #region ISerializerProvider
-
-        public ISerializer GetSerializer(string filePath)
-        {
-            var extension = Path.GetExtension(filePath);
-
-            var serializerType = extension switch
-            {
-                ".bin" => typeof(IBinarySerializer),
-                ".yaml" => typeof(IYamlSerializer),
-                ".json" => typeof(IJsonSerializer),
-                "" => typeof(IBinarySerializer),
-                _ => _extensionDescriptors.FirstOrDefault(descriptor => descriptor.Extensions.Contains(extension))?.SerializerType
-            };
-
-            return (ISerializer)_serviceProvider.GetRequiredService(serializerType);
-        }
-
-        #endregion
+        _extensionDescriptors = extensionDescriptors ?? throw new ArgumentNullException(nameof(extensionDescriptors));
+        _serviceProvider = serviceProvider ?? throw new ArgumentNullException(nameof(serviceProvider));
     }
+
+    #endregion
+
+    #region ISerializerProvider
+
+    public ISerializer GetSerializer(string filePath)
+    {
+        var extension = Path.GetExtension(filePath);
+
+        var serializerType = extension switch
+        {
+            ".bin" => typeof(IBinarySerializer),
+            ".yaml" => typeof(IYamlSerializer),
+            ".json" => typeof(IJsonSerializer),
+            "" => typeof(IBinarySerializer),
+            _ => _extensionDescriptors.FirstOrDefault(descriptor => descriptor.Extensions.Contains(extension))?.SerializerType
+        };
+
+        return (ISerializer)_serviceProvider.GetRequiredService(serializerType);
+    }
+
+    #endregion
 }

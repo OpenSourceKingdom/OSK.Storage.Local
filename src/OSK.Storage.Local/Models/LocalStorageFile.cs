@@ -1,19 +1,18 @@
 ﻿using System;
 using System.IO;
 
-namespace OSK.Storage.Local.Models
+namespace OSK.Storage.Local.Models;
+
+public class LocalStorageFile: IDisposable
 {
-    public class LocalStorageFile: IDisposable
+    public long Size { get; set; }
+
+    public bool IsEncrypted { get; set; }
+
+    public Stream DataStream { get; set; }
+
+    public void Dispose()
     {
-        public long Size { get; set; }
-
-        public bool IsEncrypted { get; set; }
-
-        public Stream DataStream { get; set; }
-
-        public void Dispose()
-        {
-            DataStream?.Dispose();
-        }
+        DataStream?.Dispose();
     }
 }
