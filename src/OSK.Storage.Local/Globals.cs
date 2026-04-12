@@ -1,4 +1,4 @@
-﻿using OSK.Functions.Outputs.Models;
+﻿using OSK.Operations.Outputs.Models;
 
 namespace OSK.Storage.Local;
 

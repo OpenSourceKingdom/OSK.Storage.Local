@@ -1,5 +1,5 @@
-﻿using OSK.Functions.Outputs;
-using OSK.Functions.Outputs.Models;
+﻿using OSK.Operations.Outputs;
+using OSK.Operations.Outputs.Models;
 using OSK.Storage.Local.Ports;
 using Snappier;
 using System.Threading;

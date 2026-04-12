@@ -1,5 +1,5 @@
 ﻿using Moq;
-using OSK.Functions.Outputs;
+using OSK.Operations.Outputs;
 using OSK.Serialization.Abstractions.Binary;
 using OSK.Storage.Local.Internal.Services;
 using OSK.Storage.Local.Models;

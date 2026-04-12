@@ -1,5 +1,5 @@
-﻿using OSK.Functions.Outputs;
-using OSK.Functions.Outputs.Models;
+﻿using OSK.Operations.Outputs;
+using OSK.Operations.Outputs.Models;
 using OSK.Security.Cryptography.Abstractions;
 using OSK.Storage.Local.Cryptography.Ports;
 using OSK.Storage.Local.Ports;
